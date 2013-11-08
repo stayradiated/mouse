@@ -4,7 +4,7 @@
 
 The default style is based on Mac OSX. It fades out as well.
 
-Currently it just draws a pretty box to the screen.
+Currently it just draws a pretty box to the screen (it's like drawing rectangles on the desktop).
 
 ![Example](example.jpg)
 
