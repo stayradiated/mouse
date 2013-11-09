@@ -14,8 +14,26 @@ body {
   opacity: 1;
   transition: opacity 0.2s ease;
   border: 1px solid rgba(255,255,255,0.58);
+  z-index: 200;
 }
 
 .select_js_box.hide {
   opacity: 0;
+}
+
+.selected {
+  background: blue;
+}
+
+.selectables {
+}
+
+.selectables div {
+  background: white;
+  opacity: 0.7;
+  margin: 20px;
+  width: 100px;
+  height: 100px;
+  padding: 20px;
+  border: 20px solid #ccc;
 }
