@@ -15,6 +15,14 @@
     end: {
       x: 0,
       y: 0
+    },
+    top_left: {
+      x: 0,
+      y: 0
+    },
+    bottom_right: {
+      x: 0,
+      y: 0
     }
   };
 
@@ -26,9 +34,9 @@
 
   // Select the elements
   var getElements = function () {
-    var rect, pos;
+    var i, rect, pos;
     elements = document.querySelectorAll(selector);
-    for (var i = 0; i < elements.length; i++) {
+    for (i = 0; i < elements.length; i++) {
       rect = elements[i].getBoundingClientRect();
       pos = {
         top: rect.top + window.pageYOffset,
@@ -44,18 +52,73 @@
   };
 
   var checkElements = function () {
-    var i, el, pos;
+    var i, el, pos, top_left, bottom_right;
+
+    top_left     = position.top_left;
+    bottom_right = position.bottom_right;
+
     for (i = 0; i < elements.length; i++) {
       el = elements[i];
       pos = el.position;
-      // if () {}
+
+      if (!(
+            pos.left > bottom_right.x ||
+            pos.right < top_left.x ||
+            pos.top > bottom_right.y ||
+            pos.bottom < top_left.y
+      )) {
+
+        el.className = classname.selected;
+        el.selected = true;
+
+      } else {
+        el.className = '';
+        el.selected = false;
+      }
+
     }
+  };
+
+  var getSelected = function () {
+    var i, selected = [];
+    for (i = 0; i < elements.length; i++) {
+      if (elements[i].selected) {
+        selected.push(elements[i]);
+      }
+    }
+    console.log(selected);
+  };
+
+  var setCorners = function () {
+    var start, end, top_left, bottom_right;
+
+    end          = position.end;
+    start        = position.start;
+    top_left     = position.top_left;
+    bottom_right = position.bottom_right;
+
+    if (end.x > start.x) {
+      top_left.x     = start.x;
+      bottom_right.x = end.x;
+    } else {
+      top_left.x     = end.x;
+      bottom_right.x = start.x;
+    }
+
+    if (end.y > start.y) {
+      top_left.y     = start.y;
+      bottom_right.y = end.y;
+    } else {
+      top_left.y     = end.y;
+      bottom_right.y = start.y;
+    }
+
   };
 
 
   // Create a new box
   var createNewBox = function () {
-    if (box !== null) removeBox();
+    if (box !== null) { removeBox(); }
     box = document.createElement('div');
     box.className = classname.box;
     document.body.appendChild(box);
@@ -73,36 +136,10 @@
 
   // Draw the box to the screen
   var render = function () {
-
-    var x1, x2, y1, y2;
-
-    if (position.end.x > position.start.x) {
-      x1 = position.start.x;
-      x2 = position.end.x;
-    } else {
-      x1 = position.end.x;
-      x2 = position.start.x;
-    }
-    if (position.end.y > position.start.y) {
-      y1 = position.start.y;
-      y2 = position.end.y;
-    } else {
-      y1 = position.end.y;
-      y2 = position.start.y;
-    }
-
-    box.style.left = x1 + 'px';
-    box.style.top = y1 + 'px';
-    box.style.width = x2 - x1 + 'px';
-    box.style.height = y2 - y1 + 'px';
-
-    console.log({
-      left: x1,
-      top: y1,
-      width: x2 - x1,
-      height: y2 - y1
-    })
-
+    box.style.top    = position.top_left.y + 'px';
+    box.style.left   = position.top_left.x + 'px';
+    box.style.width  = position.bottom_right.x - position.top_left.x + 'px';
+    box.style.height = position.bottom_right.y  - position.top_left.y + 'px';
   };
 
   var active = false;
@@ -111,21 +148,25 @@
     active = true;
     position.end.x = position.start.x = event.x;
     position.end.y = position.start.y = event.y;
+    setCorners();
     getElements();
-    createNewBox()
+    createNewBox();
     render();
   });
 
   document.addEventListener('mousemove', function (event) {
-    if (!active) return;
+    if (!active) { return; }
     position.end.x = event.x;
     position.end.y = event.y;
+    setCorners();
     render();
+    checkElements();
   });
 
   document.addEventListener('mouseup', function (event) {
     active = false;
     removeBox();
+    getSelected();
   });
 
 }());
