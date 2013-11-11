@@ -26,6 +26,7 @@
     }
   };
 
+  var selected = [];
   var selector = '.selectables div';
   var elements = null;
 
@@ -33,10 +34,16 @@
   var box = null;
 
   // Select the elements
-  var getElements = function () {
+  var resetElements = function (append) {
     var i, rect, pos;
     elements = document.querySelectorAll(selector);
     for (i = 0; i < elements.length; i++) {
+
+      if (! append) {
+        elements[i].className = '';
+        elements[i].selected = false;
+      }
+
       rect = elements[i].getBoundingClientRect();
       pos = {
         top: rect.top + window.pageYOffset,
@@ -51,7 +58,7 @@
     }
   };
 
-  var checkElements = function () {
+  var checkElements = function (append) {
     var i, el, pos, top_left, bottom_right;
 
     top_left     = position.top_left;
@@ -61,32 +68,38 @@
       el = elements[i];
       pos = el.position;
 
-      if (!(
-            pos.left > bottom_right.x ||
-            pos.right < top_left.x ||
-            pos.top > bottom_right.y ||
-            pos.bottom < top_left.y
-      )) {
+      hit = !(
+        pos.left   > bottom_right.x ||
+        pos.right  < top_left.x     ||
+        pos.top    > bottom_right.y ||
+        pos.bottom < top_left.y
+      );
 
+      if ((hit && !el.selected) || (!hit && el.selected)) {
         el.className = classname.selected;
-        el.selected = true;
-
+        el._selected = true;
       } else {
         el.className = '';
-        el.selected = false;
+        el._selected = false;
       }
 
     }
   };
 
   var getSelected = function () {
-    var i, selected = [];
+    var i;
+    selected = [];
     for (i = 0; i < elements.length; i++) {
-      if (elements[i].selected) {
+      if (elements[i]._selected) {
+        elements[i]._selected = false;
+        elements[i].selected = true;
         selected.push(elements[i]);
+      } else {
+        elements[i].selected = false;
       }
     }
-    console.log(selected);
+    console.log(selected.length);
+    return selected;
   };
 
   var setCorners = function () {
@@ -149,9 +162,10 @@
     position.end.x = position.start.x = event.x;
     position.end.y = position.start.y = event.y;
     setCorners();
-    getElements();
+    resetElements(event.ctrlKey || event.metaKey);
     createNewBox();
     render();
+    checkElements();
   });
 
   document.addEventListener('mousemove', function (event) {
