@@ -2,34 +2,48 @@
 
   'use strict';
 
+  var Box, Elements, Select;
+
   // Classes
-  var Box = require('./box');
-  var Elements = require('./elements');
+  Box = require('./box');
+  Elements = require('./elements');
 
-  // Instances
-  var elements = new Elements('.selectables div');
-  var box = null;
+  Select = function (options) {
+    this.elements = new Elements(options.query);
+    this.box = null;
+    this.active = false;
+  };
 
-  var active = false;
+  Select.prototype.init = function() {
 
-  document.addEventListener('mousedown',function (event) {
-    active = true;
-    if (box) { box.remove(); }
-    box = (new Box()).reset(event).update().render();
-    elements.reset(event.ctrlKey || event.metaKey).check(box);
-  });
+    var self = this;
 
-  document.addEventListener('mousemove', function (event) {
-    if (!active) { return; }
-    box.setEnd(event).update().render();
-    elements.check(box);
-  });
+    document.addEventListener('mousedown',function (event) {
+      self.active = true;
+      if (self.box) { self.box.remove(); }
+      self.box = (new Box()).reset(event).update().render();
+      self.elements.reset(event.ctrlKey || event.metaKey).check(self.box);
+    });
 
-  document.addEventListener('mouseup', function (event) {
-    active = false;
-    box.remove();
-    box = null;
-    elements.select();
-  });
+    document.addEventListener('mousemove', function (event) {
+      if (!self.active) { return; }
+      self.box.setEnd(event).update().render();
+      self.elements.check(self.box);
+    });
+
+    document.addEventListener('mouseup', function (event) {
+      self.active = false;
+      self.box.remove();
+      self.box = null;
+      self.elements.select();
+    });
+
+  };
+
+  if (typeof window !== 'undefined') {
+    window.Select = Select;
+  }
+
+  module.exports = Select;
 
 }());
