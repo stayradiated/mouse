@@ -1,7 +1,0 @@
-{
-  "name": "Select",
-  "version": "0.0.1",
-  "devDependencies": {
-    "coffee-scrunch": "~0.1.4"
-  }
-}
