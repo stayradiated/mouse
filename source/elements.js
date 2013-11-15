@@ -3,22 +3,23 @@
 
   var Elements;
 
-  Elements = function (query) {
-    this.query = query;
+  Elements = function (options) {
+    this.parent = options.parent;
+    this.query = options.query;
     this.selected = [];
   };
 
   Elements.prototype.reset = function(append) {
     var i, el, rect, pos;
 
-    this.el = document.querySelectorAll(this.query);
+    this.el = this.parent.querySelectorAll(this.query);
 
     for (i = 0; i < this.el.length; i++) {
 
       el = this.el[i];
 
       if (! append) {
-        el.className = '';
+        el.classList.remove('selected');
         el.selected = false;
       }
 
@@ -54,10 +55,10 @@
       );
 
       if ((hit && !el.selected) || (!hit && el.selected)) {
-        el.className = 'selected';
+        el.classList.add('selected');
         el._selected = true;
       } else {
-        el.className = '';
+        el.classList.remove('selected');
         el._selected = false;
       }
 

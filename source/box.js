@@ -2,12 +2,12 @@
 
   var Box;
 
-  Box = function (parent) {
+  Box = function () {
 
     // Create dom element
     this.el = document.createElement('div');
     this.el.className = Box.className;
-    parent.appendChild(this.el);
+    document.body.appendChild(this.el);
 
     this.mouse = {
       start: {},
