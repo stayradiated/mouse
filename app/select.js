@@ -48,6 +48,7 @@
         Elements = require('./elements');
       
         Select = function (options) {
+          this.parent = options.parent;
           this.elements = new Elements(options.query);
           this.box = null;
           this.active = false;
@@ -57,20 +58,20 @@
       
           var self = this;
       
-          document.addEventListener('mousedown',function (event) {
+          this.parent.addEventListener('mousedown',function (event) {
             self.active = true;
             if (self.box) { self.box.remove(); }
-            self.box = (new Box()).reset(event).update().render();
+            self.box = (new Box(self.parent)).reset(event).update().render();
             self.elements.reset(event.ctrlKey || event.metaKey).check(self.box);
           });
       
-          document.addEventListener('mousemove', function (event) {
+          this.parent.addEventListener('mousemove', function (event) {
             if (!self.active) { return; }
             self.box.setEnd(event).update().render();
             self.elements.check(self.box);
           });
       
-          document.addEventListener('mouseup', function (event) {
+          this.parent.addEventListener('mouseup', function (event) {
             self.active = false;
             self.box.remove();
             self.box = null;
@@ -99,12 +100,12 @@
       
         var Box;
       
-        Box = function (start, end) {
+        Box = function (parent) {
       
           // Create dom element
           this.el = document.createElement('div');
           this.el.className = Box.className;
-          document.body.appendChild(this.el);
+          parent.appendChild(this.el);
       
           this.mouse = {
             start: {},

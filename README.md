@@ -18,6 +18,7 @@ Currently it just draws a pretty box to the screen (it's like drawing rectangles
     // app
     var Select = require('select');
     var select = new Select({
+      parent: document.body,
       query: '.selectables'
     });
     select.init();
