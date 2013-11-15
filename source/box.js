@@ -19,14 +19,14 @@
   Box.className = 'select_js_box';
 
   Box.prototype.setStart = function(position) {
-    this.mouse.start.x = position.x;
-    this.mouse.start.y = position.y;
+    this.mouse.start.x = position.pageX;
+    this.mouse.start.y = position.pageY;
     return this;
   };
 
   Box.prototype.setEnd = function(position) {
-    this.mouse.end.x = position.x;
-    this.mouse.end.y = position.y;
+    this.mouse.end.x = position.pageX;
+    this.mouse.end.y = position.pageY;
     return this;
   };
 
@@ -38,7 +38,6 @@
 
   Box.prototype.remove = function() {
     var el = this.el;
-    console.log('removing box');
     el.className += ' hide';
     setTimeout(function () {
       document.body.removeChild(el);
