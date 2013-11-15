@@ -8,9 +8,21 @@ Currently it just draws a pretty box to the screen (it's like drawing rectangles
 
 ![Example](example.jpg)
 
+## Usage
+    
+    // package.json
+    "dependencies": {
+      "select": "git://github.com/stayradiated/select.git#master"
+    }
+
+    // app
+    var Select = require('select');
+    var select = new Select({
+      query: '.selectables'
+    });
+    select.init();
+
 ## Todo
 
 - Add CSS vendor prefixes
-- Package JS as a plugin
 - Allow users to set the fadeout time
-- Actually select elements
