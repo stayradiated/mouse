@@ -54,30 +54,31 @@
           this.active = false;
         };
       
+        Select.prototype._mousedown = function(event) {
+          this.active = true;
+          if (this.box) { this.box.remove(); }
+          this.box = (new Box()).reset(event).update().render();
+          this.elements.reset(event.ctrlKey || event.metaKey).check(this.box);
+        };
+      
+        Select.prototype._mousemove = function(event) {
+          if (!this.active) { return; }
+          this.box.setEnd(event).update().render();
+          this.elements.check(this.box);
+        };
+      
+        Select.prototype._mouseup = function(event) {
+          if (!this.active) { return; }
+          this.active = false;
+          this.box.remove();
+          this.box = null;
+          this.elements.select();
+        };
+      
         Select.prototype.init = function() {
-      
-          var self = this;
-      
-          this.parent.addEventListener('mousedown',function (event) {
-            self.active = true;
-            if (self.box) { self.box.remove(); }
-            self.box = (new Box()).reset(event).update().render();
-            self.elements.reset(event.ctrlKey || event.metaKey).check(self.box);
-          });
-      
-          document.addEventListener('mousemove', function (event) {
-            if (!self.active) { return; }
-            self.box.setEnd(event).update().render();
-            self.elements.check(self.box);
-          });
-      
-          document.addEventListener('mouseup', function (event) {
-            self.active = false;
-            self.box.remove();
-            self.box = null;
-            self.elements.select();
-          });
-      
+          this.parent.addEventListener('mousedown', this._mousedown.bind(this));
+          document.addEventListener('mousemove', this._mousemove.bind(this));
+          document.addEventListener('mouseup', this._mouseup.bind(this));
         };
       
         if (typeof window !== 'undefined') {
