@@ -1,8 +1,38 @@
 {
   "name": "select",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "main": "source/select.js",
+  "scripts": {
+    "test": "jshint source/*"
+  },
   "devDependencies": {
+    "jshint": "~2.3.0",
     "coffee-scrunch": "~0.1.4"
+  },
+  "jshintConfig": {
+    "curly": true,
+    "eqeqeq": true,
+    "forin": true,
+    "freeze": true,
+    "immed": true,
+    "latedef": true,
+    "indent": 2,
+    "newcap": true,
+    "noarg": true,
+    "noempty": true,
+    "nonew": true,
+    "plusplus": false,
+    "quotmark": "single",
+    "undef": true,
+    "unused": true,
+    "strict": true,
+    "trailing": true,
+    "maxparams": 3,
+    "maxdepth": 3,
+    "maxlen": 80,
+    "browser": true,
+    "node": true,
+    "onevar": true,
+    "white": true
   }
 }

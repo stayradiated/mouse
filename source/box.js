@@ -1,4 +1,6 @@
-(function() {
+(function () {
+
+  'use strict';
 
   var Box;
 
@@ -9,6 +11,11 @@
     this.el.className = Box.className;
     document.body.appendChild(this.el);
 
+    this.el.style.left   = '-10px';
+    this.el.style.top    = '-10px';
+    this.el.style.width  = 0;
+    this.el.style.height = 0;
+
     this.mouse = {
       start: {},
       end: {}
@@ -18,25 +25,25 @@
 
   Box.className = 'select_js_box';
 
-  Box.prototype.setStart = function(position) {
+  Box.prototype.setStart = function (position) {
     this.mouse.start.x = position.pageX;
     this.mouse.start.y = position.pageY;
     return this;
   };
 
-  Box.prototype.setEnd = function(position) {
+  Box.prototype.setEnd = function (position) {
     this.mouse.end.x = position.pageX;
     this.mouse.end.y = position.pageY;
     return this;
   };
 
-  Box.prototype.reset = function(position) {
+  Box.prototype.reset = function (position) {
     this.setStart(position);
     this.setEnd(position);
     return this;
   };
 
-  Box.prototype.remove = function() {
+  Box.prototype.remove = function () {
     var el = this.el;
     el.className += ' hide';
     setTimeout(function () {
@@ -45,7 +52,7 @@
     return this;
   };
 
-  Box.prototype.render = function() {
+  Box.prototype.render = function () {
     this.el.style.top    = this.top + 'px';
     this.el.style.left   = this.left + 'px';
     this.el.style.width  = this.right - this.left + 'px';
@@ -53,7 +60,7 @@
     return this;
   };
 
-  Box.prototype.update = function() {
+  Box.prototype.update = function () {
     var start, end;
 
     end          = this.mouse.end;

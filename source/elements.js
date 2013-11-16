@@ -9,7 +9,7 @@
     this.selected = [];
   };
 
-  Elements.prototype.reset = function(append) {
+  Elements.prototype.reset = function (append) {
     var i, el, rect, pos;
 
     this.el = this.parent.querySelectorAll(this.query);
@@ -24,10 +24,12 @@
       }
 
       rect = el.getBoundingClientRect();
+
       pos = {
         top: rect.top + window.pageYOffset,
         left: rect.left + window.pageXOffset,
       };
+
       el.position = {
         top: pos.top,
         left: pos.left,
@@ -39,7 +41,7 @@
     return this;
   };
 
-  Elements.prototype.check = function(box) {
+  Elements.prototype.check = function (box) {
     var i, el, pos, hit;
 
     for (i = 0; i < this.el.length; i++) {
@@ -68,7 +70,7 @@
 
   };
 
-  Elements.prototype.select = function() {
+  Elements.prototype.select = function () {
     var i, el;
 
     this.selected = [];
