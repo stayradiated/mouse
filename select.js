@@ -48,35 +48,61 @@
         Elements = require('./elements');
       
         Select = function (options) {
-          this.elements = new Elements(options.query);
+          this.parent = options.parent;
+          this.elements = new Elements(options);
+          this.min = 5;
           this.box = null;
-          this.active = false;
+          this.down = false;
+          this.moving = false;
         };
       
-        Select.prototype.init = function() {
+        Select.prototype.create = function (event) {
+          if (this.box) { this.box.remove(); }
+          this.box = (new Box()).reset(event).update();
+          this.elements.reset(event.ctrlKey || event.metaKey).check(this.box);
+        };
       
-          var self = this;
+        Select.prototype.update = function (event) {
+          this.box.setEnd(event).update();
+          this.elements.check(this.box);
+        };
       
-          document.addEventListener('mousedown',function (event) {
-            self.active = true;
-            if (self.box) { self.box.remove(); }
-            self.box = (new Box()).reset(event).update().render();
-            self.elements.reset(event.ctrlKey || event.metaKey).check(self.box);
-          });
+        Select.prototype._mousedown = function (event) {
+          this.down = true;
+          this.start = event;
+          this.create(event);
+        };
       
-          document.addEventListener('mousemove', function (event) {
-            if (!self.active) { return; }
-            self.box.setEnd(event).update().render();
-            self.elements.check(self.box);
-          });
+        Select.prototype._mousemove = function (event) {
+          if (!this.down) { return; }
       
-          document.addEventListener('mouseup', function (event) {
-            self.active = false;
-            self.box.remove();
-            self.box = null;
-            self.elements.select();
-          });
+          if (this.moving) {
+            this.update(event);
+            this.box.render();
       
+          } else if (
+            Math.abs(event.x - this.start.x) > this.min ||
+            Math.abs(event.y - this.start.y) > this.min
+          ) {
+            this.moving = true;
+            this.update(event);
+            this.box.render();
+          }
+        };
+      
+        Select.prototype._mouseup = function () {
+          if (!this.down) { return; }
+          this.down = false;
+          this.moving = false;
+          this.box.remove();
+          this.box = null;
+          this.elements.select();
+        };
+      
+        Select.prototype.init = function () {
+          this.parent.addEventListener('mousedown', this._mousedown.bind(this));
+          document.addEventListener('mousemove', this._mousemove.bind(this));
+          document.addEventListener('mouseup', this._mouseup.bind(this));
         };
       
         if (typeof window !== 'undefined') {
@@ -95,16 +121,23 @@
         */
 
       }, function(require, module, exports) {
-        (function() {
+        (function () {
+      
+        'use strict';
       
         var Box;
       
-        Box = function (start, end) {
+        Box = function () {
       
           // Create dom element
           this.el = document.createElement('div');
           this.el.className = Box.className;
           document.body.appendChild(this.el);
+      
+          this.el.style.left   = '-10px';
+          this.el.style.top    = '-10px';
+          this.el.style.width  = 0;
+          this.el.style.height = 0;
       
           this.mouse = {
             start: {},
@@ -115,25 +148,25 @@
       
         Box.className = 'select_js_box';
       
-        Box.prototype.setStart = function(position) {
+        Box.prototype.setStart = function (position) {
           this.mouse.start.x = position.pageX;
           this.mouse.start.y = position.pageY;
           return this;
         };
       
-        Box.prototype.setEnd = function(position) {
+        Box.prototype.setEnd = function (position) {
           this.mouse.end.x = position.pageX;
           this.mouse.end.y = position.pageY;
           return this;
         };
       
-        Box.prototype.reset = function(position) {
+        Box.prototype.reset = function (position) {
           this.setStart(position);
           this.setEnd(position);
           return this;
         };
       
-        Box.prototype.remove = function() {
+        Box.prototype.remove = function () {
           var el = this.el;
           el.className += ' hide';
           setTimeout(function () {
@@ -142,7 +175,7 @@
           return this;
         };
       
-        Box.prototype.render = function() {
+        Box.prototype.render = function () {
           this.el.style.top    = this.top + 'px';
           this.el.style.left   = this.left + 'px';
           this.el.style.width  = this.right - this.left + 'px';
@@ -150,7 +183,7 @@
           return this;
         };
       
-        Box.prototype.update = function() {
+        Box.prototype.update = function () {
           var start, end;
       
           end          = this.mouse.end;
@@ -192,30 +225,33 @@
       
         var Elements;
       
-        Elements = function (query) {
-          this.query = query;
+        Elements = function (options) {
+          this.parent = options.parent;
+          this.query = options.query;
           this.selected = [];
         };
       
-        Elements.prototype.reset = function(append) {
+        Elements.prototype.reset = function (append) {
           var i, el, rect, pos;
       
-          this.el = document.querySelectorAll(this.query);
+          this.el = this.parent.querySelectorAll(this.query);
       
           for (i = 0; i < this.el.length; i++) {
       
             el = this.el[i];
       
             if (! append) {
-              el.className = '';
+              el.classList.remove('selected');
               el.selected = false;
             }
       
             rect = el.getBoundingClientRect();
+      
             pos = {
               top: rect.top + window.pageYOffset,
               left: rect.left + window.pageXOffset,
             };
+      
             el.position = {
               top: pos.top,
               left: pos.left,
@@ -227,7 +263,7 @@
           return this;
         };
       
-        Elements.prototype.check = function(box) {
+        Elements.prototype.check = function (box) {
           var i, el, pos, hit;
       
           for (i = 0; i < this.el.length; i++) {
@@ -243,10 +279,10 @@
             );
       
             if ((hit && !el.selected) || (!hit && el.selected)) {
-              el.className = 'selected';
+              el.classList.add('selected');
               el._selected = true;
             } else {
-              el.className = '';
+              el.classList.remove('selected');
               el._selected = false;
             }
       
@@ -256,7 +292,7 @@
       
         };
       
-        Elements.prototype.select = function() {
+        Elements.prototype.select = function () {
           var i, el;
       
           this.selected = [];
