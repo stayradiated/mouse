@@ -9,10 +9,12 @@
     this.selected = [];
   };
 
+  Elements.prototype.set = function (elements) {
+    this.el = elements;
+  };
+
   Elements.prototype.reset = function (append) {
     var i, el, rect, pos;
-
-    this.el = this.parent.querySelectorAll(this.query);
 
     for (i = 0; i < this.el.length; i++) {
 
