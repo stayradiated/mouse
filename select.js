@@ -48,6 +48,7 @@
         Elements = require('./elements');
       
         Select = function (options) {
+          this.query = options.query;
           this.parent = options.parent;
           this.elements = new Elements(options);
           this.min = 5;
@@ -59,6 +60,7 @@
         Select.prototype.create = function (event) {
           if (this.box) { this.box.remove(); }
           this.box = (new Box()).reset(event).update();
+          this.elements.set(this.el);
           this.elements.reset(event.ctrlKey || event.metaKey).check(this.box);
         };
       
@@ -67,10 +69,27 @@
           this.elements.check(this.box);
         };
       
+        Select.prototype.getElements = function(first_argument) {
+          return this.el = this.parent.querySelectorAll(this.query);
+        };
+      
+        Select.prototype.isNotElement = function(target) {
+          while (this.parent !== target) {
+            if (Array.prototype.indexOf.call(this.el, target) > -1) {
+              return false;
+            }
+            target = target.parentElement;
+          }
+          return true;
+        };
+      
         Select.prototype._mousedown = function (event) {
-          this.down = true;
-          this.start = event;
-          this.create(event);
+          this.getElements();
+          if (this.isNotElement(event.target)) {
+            this.down = true;
+            this.start = event;
+            this.create(event);
+          }
         };
       
         Select.prototype._mousemove = function (event) {
@@ -231,10 +250,12 @@
           this.selected = [];
         };
       
+        Elements.prototype.set = function(elements) {
+          this.el = elements;
+        };
+      
         Elements.prototype.reset = function (append) {
           var i, el, rect, pos;
-      
-          this.el = this.parent.querySelectorAll(this.query);
       
           for (i = 0; i < this.el.length; i++) {
       
