@@ -38,6 +38,20 @@
   };
 
 
+  Items.prototype.clearItem = function(item) {
+    item.classList.remove('selected');
+    item.selected = false;
+  };
+
+
+  Items.prototype.clear = function() {
+    var i;
+    for (i = 0; i < this.elements.length; i++) {
+      this.clearItem(this.elements[i]);
+    }
+  };
+
+
   Items.prototype.reset = function (append) {
     var i, el, rect, pos;
 
@@ -46,8 +60,7 @@
       el = this.elements[i];
 
       if (! append) {
-        el.classList.remove('selected');
-        el.selected = false;
+        this.clearItem(el);
       }
 
       rect = el.getBoundingClientRect();

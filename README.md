@@ -1,10 +1,13 @@
-# Select
+# Mouse.js
 
-> Draw select boxes with your mouse (in a browser).
+> jQuery UI alternative for draggable, droppable, sortable and selectable
 
-The default style is based on Mac OSX. It fades out as well.
 
-Currently it just draws a pretty box to the screen (it's like drawing rectangles on the desktop).
+## Select.js
+
+Select stuff on the screen with a box.
+
+
 
 ![Example](example.jpg)
 
@@ -12,16 +15,16 @@ Currently it just draws a pretty box to the screen (it's like drawing rectangles
     
     // package.json
     "dependencies": {
-      "select": "git://github.com/stayradiated/select.git#master"
+      "mouse": "git://github.com/stayradiated/mouse.git#master"
     }
 
     // app
-    var Select = require('select');
-    var select = new Select({
+    var Mouse = require('mouse');
+    var mouse = new Mouse({
       parent: document.body,
-      query: '.selectables'
+      query: '.mouse'
     });
-    select.init();
+    mouse.init();
 
 ## Todo
 

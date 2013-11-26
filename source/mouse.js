@@ -2,15 +2,22 @@
 
   'use strict';
 
-  var Mouse, Select, Items;
+  var Mouse, Select, Drag, Items, DEFAULT, SELECT, DRAG;
 
   Select = require('./select');
   Items = require('./elements');
+  Drag = require('./drag');
 
+  // Modes
+  DEFAULT = 0;
+  SELECT = 1;
+  DRAG = 2;
 
   Mouse = function (options) {
 
     this.parent = options.parent;
+
+    this.drag = new Drag();
 
     this.items = new Items({
       parent: this.parent,
@@ -27,6 +34,7 @@
     // Mouse state
     this.down = false;
     this.moving = false;
+    this.mode = DEFAULT;
   };
 
 
@@ -42,7 +50,9 @@
     this.items.fetch();
 
     if (this.items.isItem(event.target)) {
-      this.drag = true;
+      this.mode = DRAG;
+    } else {
+      this.mode = SELECT;
     }
 
   };
@@ -56,12 +66,10 @@
 
   Mouse.prototype._move = function (event) {
 
-    if (! this.down) {
-      return;
-    }
+    if (! this.down) { return; }
 
     if (this.moving) {
-      if (this.drag) {
+      if (this.mode === DRAG) {
         console.log('dragging item');
       } else {
         this.select.move(event);
@@ -71,10 +79,10 @@
       Math.abs(event.y - this.start.y) > this.min
     ) {
       this.moving = true;
-      if (this.drag) {
+      if (this.mode === DRAG) {
         console.log('drag start');
       } else {
-        this.select.start(event);
+        this.select.start(this.start);
       }
     }
   };
@@ -88,19 +96,24 @@
 
   Mouse.prototype._up = function () {
 
-    if (! this.down) {
+    if (! this.down) { return; }
+    this.down = false;
+
+    if (! this.moving) {
+      if (this.mode === SELECT) {
+        this.items.clear();
+      }
       return;
     }
+    this.moving = false;
 
-    if (this.drag) {
+    if (this.mode === DRAG) {
       console.log('drag end');
-    } else {
+    } else if (this.mode === SELECT) {
       this.select.end();
     }
 
-    this.drag = false;
-    this.down = false;
-    this.moving = false;
+    this.mode = DEFAULT;
   };
 
 
