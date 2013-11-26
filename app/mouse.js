@@ -31,102 +31,184 @@
     [
       {
         /*
-          /Volumes/Home/Projects/Select/source/select.js
+          /Volumes/Home/Projects/Select/source/mouse.js
         */
 
-        './box': 1,
-        './elements': 2
+        './select': 1,
+        './elements': 3
       }, function(require, module, exports) {
         (function () {
       
         'use strict';
       
-        var Box, Elements, Select;
+        var Mouse, Select, Items;
       
-        // Classes
-        Box = require('./box');
-        Elements = require('./elements');
+        Select = require('./select');
+        Items = require('./elements');
       
-        Select = function (options) {
-          this.query = options.query;
+      
+        Mouse = function (options) {
+      
           this.parent = options.parent;
-          this.elements = new Elements(options);
+      
+          this.items = new Items({
+            parent: this.parent,
+            query: options.query
+          });
+      
+          this.select = new Select({
+            items: this.items
+          });
+      
+          // Minimum distance mouse must move before considered moving
           this.min = 5;
-          this.box = null;
+      
+          // Mouse state
           this.down = false;
           this.moving = false;
         };
       
-        Select.prototype.create = function (event) {
-          if (this.box) { this.box.remove(); }
-          this.box = (new Box()).reset(event).update();
-          this.elements.set(this.el);
-          this.elements.reset(event.ctrlKey || event.metaKey).check(this.box);
-        };
       
-        Select.prototype.update = function (event) {
-          this.box.setEnd(event).update();
-          this.elements.check(this.box);
-        };
+        /**
+         * Mouse down event listener
+         * - event (Event) : the mousedown event
+         * > void
+         */
       
-        Select.prototype.getElements = function(first_argument) {
-          return this.el = this.parent.querySelectorAll(this.query);
-        };
+        Mouse.prototype._down = function (event) {
+          this.down = true;
+          this.start = event;
+          this.items.fetch();
       
-        Select.prototype.isNotElement = function(target) {
-          while (this.parent !== target) {
-            if (Array.prototype.indexOf.call(this.el, target) > -1) {
-              return false;
-            }
-            target = target.parentElement;
+          if (this.items.isItem(event.target)) {
+            this.drag = true;
           }
-          return true;
+      
         };
       
-        Select.prototype._mousedown = function (event) {
-          this.getElements();
-          if (this.isNotElement(event.target)) {
-            this.down = true;
-            this.start = event;
-            this.create(event);
+      
+        /**
+         * Mouse move event listener
+         * - event (Event) : the mousemove event
+         * > void
+         */
+      
+        Mouse.prototype._move = function (event) {
+      
+          if (! this.down) {
+            return;
           }
-        };
-      
-        Select.prototype._mousemove = function (event) {
-          if (!this.down) { return; }
       
           if (this.moving) {
-            this.update(event);
-            this.box.render();
-      
+            if (this.drag) {
+              console.log('dragging item');
+            } else {
+              this.select.move(event);
+            }
           } else if (
             Math.abs(event.x - this.start.x) > this.min ||
             Math.abs(event.y - this.start.y) > this.min
           ) {
             this.moving = true;
-            this.update(event);
-            this.box.render();
+            if (this.drag) {
+              console.log('drag start');
+            } else {
+              this.select.start(event);
+            }
           }
         };
       
-        Select.prototype._mouseup = function () {
-          if (!this.down) { return; }
+      
+        /**
+         * Mouse up event listener
+         * - event (Event) : the mouseup event
+         * > void
+         */
+      
+        Mouse.prototype._up = function () {
+      
+          if (! this.down) {
+            return;
+          }
+      
+          if (this.drag) {
+            console.log('drag end');
+          } else {
+            this.select.end();
+          }
+      
+          this.drag = false;
           this.down = false;
           this.moving = false;
-          this.box.remove();
-          this.box = null;
-          this.elements.select();
         };
       
-        Select.prototype.init = function () {
-          this.parent.addEventListener('mousedown', this._mousedown.bind(this));
-          document.addEventListener('mousemove', this._mousemove.bind(this));
-          document.addEventListener('mouseup', this._mouseup.bind(this));
+      
+        /**
+         * Bind the mouse events
+         * > void
+         */
+      
+        Mouse.prototype.init = function () {
+          this.parent.addEventListener('mousedown', this._down.bind(this));
+          document.addEventListener('mousemove', this._move.bind(this));
+          document.addEventListener('mouseup', this._up.bind(this));
         };
       
         if (typeof window !== 'undefined') {
-          window.Select = Select;
+          window.Mouse = Mouse;
         }
+      
+        module.exports = Mouse;
+      
+      }());
+      ;
+      }
+    ], [
+      {
+        /*
+          /Volumes/Home/Projects/Select/source/select.js
+        */
+
+        './box': 2
+      }, function(require, module, exports) {
+        (function () {
+      
+        'use strict';
+      
+        var Box, Select;
+      
+        Box = require('./box');
+      
+        Select = function (options) {
+          this.items = options.items;
+          this.box = null;
+        };
+      
+        Select.prototype.start = function (event) {
+      
+          var append = event.ctrlKey || event.metaKey;
+      
+          if (this.box) {
+            this.box.remove();
+          }
+      
+          this.box = new Box();
+          this.box.reset(event).update();
+      
+          this.items.reset(append).check(this.box);
+        };
+      
+        Select.prototype.move = function (event) {
+          this.box.setEnd(event).update();
+          this.items.check(this.box);
+          this.box.render();
+        };
+      
+        Select.prototype.end = function () {
+          this.box.remove();
+          this.box = null;
+          this.items.select();
+        };
       
         module.exports = Select;
       
@@ -242,24 +324,49 @@
         (function () {
         'use strict';
       
-        var Elements;
+        var Items;
       
-        Elements = function (options) {
+        Items = function (options) {
           this.parent = options.parent;
           this.query = options.query;
           this.selected = [];
         };
       
-        Elements.prototype.set = function(elements) {
-          this.el = elements;
+      
+        /**
+         * Get the elements from the dom
+         * > Nodelist : the elements
+         */
+      
+        Items.prototype.fetch = function () {
+          this.elements = this.parent.querySelectorAll(this.query);
+          return this.elements;
         };
       
-        Elements.prototype.reset = function (append) {
+      
+        /**
+         * Check if an element is part of an item
+         * - target (Element) : The dom element to check
+         * > Boolean  : if the element is part of an item or not
+         */
+      
+        Items.prototype.isItem = function (target) {
+          while (this.parent !== target) {
+            if (Array.prototype.indexOf.call(this.elements, target) > -1) {
+              return true;
+            }
+            target = target.parentElement;
+          }
+          return false;
+        };
+      
+      
+        Items.prototype.reset = function (append) {
           var i, el, rect, pos;
       
-          for (i = 0; i < this.el.length; i++) {
+          for (i = 0; i < this.elements.length; i++) {
       
-            el = this.el[i];
+            el = this.elements[i];
       
             if (! append) {
               el.classList.remove('selected');
@@ -284,12 +391,12 @@
           return this;
         };
       
-        Elements.prototype.check = function (box) {
+        Items.prototype.check = function (box) {
           var i, el, pos, hit;
       
-          for (i = 0; i < this.el.length; i++) {
+          for (i = 0; i < this.elements.length; i++) {
       
-            el = this.el[i];
+            el = this.elements[i];
             pos = el.position;
       
             hit = !(
@@ -313,13 +420,13 @@
       
         };
       
-        Elements.prototype.select = function () {
+        Items.prototype.select = function () {
           var i, el;
       
           this.selected = [];
       
-          for (i = 0; i < this.el.length; i++) {
-            el = this.el[i];
+          for (i = 0; i < this.elements.length; i++) {
+            el = this.elements[i];
       
             if (el._selected) {
               el._selected = false;
@@ -333,7 +440,7 @@
           return this;
         };
       
-        module.exports = Elements;
+        module.exports = Items;
       
       }());;
       }

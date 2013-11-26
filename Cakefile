@@ -1,8 +1,8 @@
 fs      = require 'fs'
 Scrunch = require 'coffee-scrunch'
 
-input  = './source/select.js'
-output = './app/select.js'
+input  = './source/mouse.js'
+output = './app/mouse.js'
 
 init = (scrunch) ->
 
