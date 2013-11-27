@@ -17,7 +17,9 @@
 
     this.parent = options.parent;
 
-    this.drag = new Drag();
+    this.drag = new Drag({
+      parent: this.parent
+    });
 
     this.items = new Items({
       parent: this.parent,
@@ -45,12 +47,20 @@
    */
 
   Mouse.prototype._down = function (event) {
+
+    if (event.which != 1) {
+      return;
+    }
+
     this.down = true;
     this.start = event;
     this.items.fetch();
+    this.item = this.items.find(event.target);
 
-    if (this.items.isItem(event.target)) {
+
+    if (this.item) {
       this.mode = DRAG;
+      this.drag.use(this.item);
     } else {
       this.mode = SELECT;
     }
@@ -70,7 +80,7 @@
 
     if (this.moving) {
       if (this.mode === DRAG) {
-        console.log('dragging item');
+        this.drag.move(event);
       } else {
         this.select.move(event);
       }
@@ -80,7 +90,7 @@
     ) {
       this.moving = true;
       if (this.mode === DRAG) {
-        console.log('drag start');
+        this.drag.start(this.start);
       } else {
         this.select.start(this.start);
       }
@@ -100,15 +110,13 @@
     this.down = false;
 
     if (! this.moving) {
-      if (this.mode === SELECT) {
-        this.items.clear();
-      }
+      if (this.mode === SELECT) { this.items.clear(); }
       return;
     }
     this.moving = false;
 
     if (this.mode === DRAG) {
-      console.log('drag end');
+      this.drag.end();
     } else if (this.mode === SELECT) {
       this.select.end();
     }

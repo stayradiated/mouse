@@ -40,3 +40,12 @@ body {
   background: rgba(30, 30, 200, 0.3);
 }
 
+.selectables .draggable {
+  position: absolute;
+  margin: 0;
+}
+
+.selectables .placeholder {
+  background: #555;
+  border-color: #333;
+}

@@ -31,7 +31,7 @@
     [
       {
         /*
-          /Volumes/Home/Projects/Select/source/mouse.js
+          /Volumes/Home/Projects/Mouse/source/mouse.js
         */
 
         './select': 1,
@@ -57,7 +57,9 @@
       
           this.parent = options.parent;
       
-          this.drag = new Drag();
+          this.drag = new Drag({
+            parent: this.parent
+          });
       
           this.items = new Items({
             parent: this.parent,
@@ -85,12 +87,20 @@
          */
       
         Mouse.prototype._down = function (event) {
+      
+          if (event.which != 1) {
+            return;
+          }
+      
           this.down = true;
           this.start = event;
           this.items.fetch();
+          this.item = this.items.find(event.target);
       
-          if (this.items.isItem(event.target)) {
+      
+          if (this.item) {
             this.mode = DRAG;
+            this.drag.use(this.item);
           } else {
             this.mode = SELECT;
           }
@@ -110,7 +120,7 @@
       
           if (this.moving) {
             if (this.mode === DRAG) {
-              console.log('dragging item');
+              this.drag.move(event);
             } else {
               this.select.move(event);
             }
@@ -120,7 +130,7 @@
           ) {
             this.moving = true;
             if (this.mode === DRAG) {
-              console.log('drag start');
+              this.drag.start(this.start);
             } else {
               this.select.start(this.start);
             }
@@ -140,15 +150,13 @@
           this.down = false;
       
           if (! this.moving) {
-            if (this.mode === SELECT) {
-              this.items.clear();
-            }
+            if (this.mode === SELECT) { this.items.clear(); }
             return;
           }
           this.moving = false;
       
           if (this.mode === DRAG) {
-            console.log('drag end');
+            this.drag.end();
           } else if (this.mode === SELECT) {
             this.select.end();
           }
@@ -180,7 +188,7 @@
     ], [
       {
         /*
-          /Volumes/Home/Projects/Select/source/select.js
+          /Volumes/Home/Projects/Mouse/source/select.js
         */
 
         './box': 2
@@ -232,7 +240,7 @@
     ], [
       {
         /*
-          /Volumes/Home/Projects/Select/source/box.js
+          /Volumes/Home/Projects/Mouse/source/box.js
         */
 
       }, function(require, module, exports) {
@@ -331,7 +339,7 @@
     ], [
       {
         /*
-          /Volumes/Home/Projects/Select/source/elements.js
+          /Volumes/Home/Projects/Mouse/source/elements.js
         */
 
       }, function(require, module, exports) {
@@ -364,10 +372,10 @@
          * > Boolean  : if the element is part of an item or not
          */
       
-        Items.prototype.isItem = function (target) {
+        Items.prototype.find = function (target) {
           while (this.parent !== target) {
             if (Array.prototype.indexOf.call(this.elements, target) > -1) {
-              return true;
+              return target;
             }
             target = target.parentElement;
           }
@@ -474,7 +482,7 @@
     ], [
       {
         /*
-          /Volumes/Home/Projects/Select/source/drag.js
+          /Volumes/Home/Projects/Mouse/source/drag.js
         */
 
       }, function(require, module, exports) {
@@ -482,16 +490,58 @@
       
         'use strict';
       
-        var Drag;
+      
+        var Drag, PLACEHOLDER;
+      
+        PLACEHOLDER = document.createElement('div');
+        PLACEHOLDER.className = 'placeholder';
       
         Drag = function () {
-      
+          this.el = null;
+          this.parent = null;
+          this.offsetX = 0;
+          this.offsetY = 0;
+          this.oldTop = 0;
+          this.oldLeft = 0;
         };
       
-        Drag.prototype.start = function () {
+        Drag.prototype.use = function(item) {
+          this.item = item;
         };
       
-        Drag.prototype.end = function () {
+        Drag.prototype.start = function (event) {
+      
+          // Store variables
+          this.offsetX = event.offsetX;
+          this.offsetY = event.offsetY;
+      
+          // Save original position
+          this.oldTop = this.item.style.top;
+          this.oldLeft = this.item.style.left;
+      
+          // Set parent and add placeholder
+          this.parent = this.item.parentElement;
+          this.parent.insertBefore(PLACEHOLDER, this.item);
+      
+          // Make draggable
+          this.item.classList.add('draggable');
+          this.move(event);
+        };
+      
+        Drag.prototype.move = function (event) {
+          this.item.style.top = event.pageY - this.offsetY + 'px';
+          this.item.style.left = event.pageX - this.offsetX + 'px';
+        };
+      
+        Drag.prototype.end = function (event) {
+      
+          // Remove placeholder
+          this.parent.removeChild(PLACEHOLDER);
+      
+          // Revert element to it's original position
+          this.item.classList.remove('draggable');
+          this.item.style.top = this.oldTop;
+          this.item.style.left = this.oldLeft;
         };
       
       

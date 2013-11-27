@@ -27,10 +27,10 @@
    * > Boolean  : if the element is part of an item or not
    */
 
-  Items.prototype.isItem = function (target) {
+  Items.prototype.find = function (target) {
     while (this.parent !== target) {
       if (Array.prototype.indexOf.call(this.elements, target) > -1) {
-        return true;
+        return target;
       }
       target = target.parentElement;
     }
