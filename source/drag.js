@@ -29,7 +29,7 @@
 
   };
 
-  Drag.prototype.prepare = function(item) {
+  Drag.prototype.prepare = function (item) {
     this.item = item;
   };
 
@@ -57,7 +57,7 @@
     this.item.style.left = event.pageX - this.offsetX + 'px';
   };
 
-  Drag.prototype.end = function (event) {
+  Drag.prototype.end = function () {
 
     // Remove placeholder
     this.parent.removeChild(PLACEHOLDER);

@@ -18,28 +18,27 @@
     this.endY = 0;
 
     if (rect) {
-      this.set(rect);
+      this.setRect(rect);
     }
 
   };
 
-  Rectangle.prototype.set = function (rect) {
-    this.startX = rect.top;
-    this.startY = rect.left;
-    this.endX = rect.right;
-    this.endY = rect.bottom;
-    this.update();
-    console.log({
-      top: this.top - rect.top,
-      bottom: this.bottom - rect.bottom
-    })
+  Rectangle.prototype.setRect = function (rect) {
+
+    this.top = rect.top;
+    this.left = rect.left;
+    this.width = rect.width;
+    this.height = rect.height;
+    this.updateFromRect();
+
+    return this;
   };
 
   Rectangle.prototype.setStart = function (x, y) {
 
     this.startX = x;
     this.startY = y;
-    this.update();
+    this.setEnd(x, y);
 
     return this;
   };
@@ -48,12 +47,12 @@
 
     this.endX = x;
     this.endY = y;
-    this.update();
+    this.updateFromPoints();
 
     return this;
   };
 
-  Rectangle.prototype.update = function () {
+  Rectangle.prototype.updateFromPoints = function () {
 
     if (this.endX > this.startX) {
       this.left = this.startX;
@@ -77,11 +76,30 @@
     return this;
   };
 
-  Rectangle.prototype.move = function(x, y) {
+  Rectangle.prototype.updateFromRect = function () {
+    this.right = this.left + this.width;
+    this.bottom = this.top + this.height;
+
+    return this;
+  };
+
+
+  Rectangle.prototype.move = function (x, y) {
     this.left += x;
     this.right += x;
     this.top += y;
     this.bottom += y;
+
+    return this;
+  };
+
+  Rectangle.prototype.touching = function (rect) {
+    return (
+      this.left   < rect.right  &&
+      this.right  > rect.left   &&
+      this.top    < rect.bottom &&
+      this.bottom > rect.top
+    );
   };
 
   module.exports = Rectangle;

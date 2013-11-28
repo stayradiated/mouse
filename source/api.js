@@ -2,9 +2,7 @@
 
   'use strict';
 
-  var Api;
-
-  var Items, Mouse, Select, Drag, Drop;
+  var Api, Items, Mouse, Select, Drag, Drop;
 
   Items = require('./items');
   Mouse = require('./mouse');
@@ -35,7 +33,6 @@
     this.drag = new Drag({
       mouse: this.mouse
     });
-
 
   };
 

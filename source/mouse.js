@@ -36,7 +36,7 @@
 
   Mouse.prototype._down = function (event) {
 
-    if (event.which != 1) {
+    if (event.which !== 1) {
       return;
     }
 

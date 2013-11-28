@@ -29,7 +29,7 @@
   };
 
   Drop.prototype.enter = function (event) {
-    console.log('maybe')
+    console.log('maybe');
     if (! this.active) { return; }
     console.log('enter');
   };

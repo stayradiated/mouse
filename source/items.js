@@ -41,13 +41,13 @@
   };
 
 
-  Items.prototype.clearItem = function(item) {
+  Items.prototype.clearItem = function (item) {
     item.classList.remove('selected');
     item.selected = false;
   };
 
 
-  Items.prototype.clear = function() {
+  Items.prototype.clear = function () {
     var i;
     for (i = 0; i < this.elements.length; i++) {
       this.clearItem(this.elements[i]);
@@ -67,27 +67,19 @@
       }
 
       el.rect = new Rectangle(el.getBoundingClientRect());
-      // el.rect.move(window.pageXOffset, window.pageYOffset);
+      el.rect.move(window.pageXOffset, window.pageYOffset);
 
     }
 
     return this;
   };
 
-  Items.prototype.check = function (rect) {
-    var i, el, pos, hit;
-
+  Items.prototype.check = function (box) {
+    var i, el, hit;
     for (i = 0; i < this.elements.length; i++) {
 
       el = this.elements[i];
-      pos = el.rect;
-
-      hit = !(
-        pos.left   > rect.right  ||
-        pos.right  < rect.left   ||
-        pos.top    > rect.bottom ||
-        pos.bottom < rect.top
-      );
+      hit = box.touching(el.rect);
 
       if ((hit && !el.selected) || (!hit && el.selected)) {
         el.classList.add('selected');
@@ -96,11 +88,9 @@
         el.classList.remove('selected');
         el._selected = false;
       }
-
     }
 
     return this;
-
   };
 
   Items.prototype.select = function () {
