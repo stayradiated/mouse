@@ -25,7 +25,7 @@
         parent: document.body,
         query: '.selectables div'
     });
-    mouse.drop(document.querySelector('.drop-zone'));
+    mouse.addDrop(document.querySelector('.drop-zone'));
     mouse.on('drop', function (element, zone) {
       console.log(element);
     });

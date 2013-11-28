@@ -34,18 +34,27 @@
       mouse: this.mouse
     });
 
+    this.removeDrop = this.removeDrop.bind(this);
+    this.mouse.on('remove-drop', this.removeDrop);
+
   };
 
   Api.prototype.init = function () {
     this.mouse.init();
   };
 
-  Api.prototype.drop = function (el) {
+  Api.prototype.addDrop = function (el) {
     var drop = new Drop({
       mouse: this.mouse,
       el: el
     });
     this.drops.push(drop);
+    return drop;
+  };
+
+  Api.prototype.removeDrop = function (drop) {
+    var index = this.drops.indexOf(drop);
+    this.drops.splice(index, 1);
   };
 
   Api.prototype.on = function () {

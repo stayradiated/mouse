@@ -17,10 +17,14 @@
     this.active = false;
     this.rect = new Rectangle()
 
+    this.move = this.move.bind(this);
+    this.activate = this.activate.bind(this);
+    this.deactivate = this.deactivate.bind(this);
+
     // Events
-    this.mouse.on('start-drag', this.activate.bind(this));
-    this.mouse.on('end-drag', this.deactivate.bind(this));
-    this.mouse.on('move-drag', this.move.bind(this));
+    this.mouse.on('start-drag', this.activate);
+    this.mouse.on('end-drag', this.deactivate);
+    this.mouse.on('move-drag', this.move);
   };
 
   Drop.prototype.activate = function () {
@@ -53,6 +57,13 @@
   Drop.prototype.leave = function (event) {
     this.hover = false;
     this.el.classList.remove('droppable');
+  };
+
+  Drop.prototype.remove = function () {
+    this.mouse.off('start-drag', this.activate);
+    this.mouse.off('end-drag', this.deactivate);
+    this.mouse.off('move-drag', this.move);
+    this.mouse.emit('remove-drop', this);
   };
 
   module.exports = Drop;
