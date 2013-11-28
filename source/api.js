@@ -37,11 +37,7 @@
   };
 
   Api.prototype.init = function () {
-    var i;
     this.mouse.init();
-    for (i = 0; i < this.drops.length; i++) {
-      this.drops[i].init();
-    }
   };
 
   Api.prototype.drop = function (el) {

@@ -44,9 +44,7 @@
       
         'use strict';
       
-        var Api;
-      
-        var Items, Mouse, Select, Drag, Drop;
+        var Api, Items, Mouse, Select, Drag, Drop;
       
         Items = require('./items');
         Mouse = require('./mouse');
@@ -78,15 +76,10 @@
             mouse: this.mouse
           });
       
-      
         };
       
         Api.prototype.init = function () {
-          var i;
           this.mouse.init();
-          for (i = 0; i < this.drops.length; i++) {
-            this.drops[i].init();
-          }
         };
       
         Api.prototype.drop = function (el) {
@@ -156,13 +149,13 @@
         };
       
       
-        Items.prototype.clearItem = function(item) {
+        Items.prototype.clearItem = function (item) {
           item.classList.remove('selected');
           item.selected = false;
         };
       
       
-        Items.prototype.clear = function() {
+        Items.prototype.clear = function () {
           var i;
           for (i = 0; i < this.elements.length; i++) {
             this.clearItem(this.elements[i]);
@@ -343,6 +336,13 @@
           );
         };
       
+        Rectangle.prototype.contains = function (x, y) {
+          return (
+            x >= this.left && x < this.right &&
+            y >= this.top  && y < this.bottom
+          );
+        };
+      
         module.exports = Rectangle;
       
       }());;
@@ -393,7 +393,7 @@
       
         Mouse.prototype._down = function (event) {
       
-          if (event.which != 1) {
+          if (event.which !== 1) {
             return;
           }
       
@@ -739,7 +739,7 @@
       
         };
       
-        Drag.prototype.prepare = function(item) {
+        Drag.prototype.prepare = function (item) {
           this.item = item;
         };
       
@@ -767,7 +767,7 @@
           this.item.style.left = event.pageX - this.offsetX + 'px';
         };
       
-        Drag.prototype.end = function (event) {
+        Drag.prototype.end = function () {
       
           // Remove placeholder
           this.parent.removeChild(PLACEHOLDER);
@@ -789,12 +789,15 @@
           /Volumes/Home/Projects/Mouse/source/drop.js
         */
 
+        './rectangle': 2
       }, function(require, module, exports) {
         (function () {
       
         'use strict';
       
-        var Drop;
+        var Drop, Rectangle;
+      
+        Rectangle = require('./rectangle');
       
         Drop = function (options) {
       
@@ -805,35 +808,40 @@
           // Instance variables
           this.hover = false;
           this.active = false;
+          this.rect = new Rectangle()
       
           // Events
           this.mouse.on('start-drag', this.activate.bind(this));
           this.mouse.on('end-drag', this.deactivate.bind(this));
-      
+          this.mouse.on('move-drag', this.move.bind(this));
         };
       
         Drop.prototype.activate = function () {
           this.active = true;
+          this.rect.setRect(this.el.getBoundingClientRect());
         };
       
         Drop.prototype.deactivate = function () {
           this.active = false;
         };
       
+        Drop.prototype.move = function (event) {
+          var hit = this.rect.contains(event.pageX, event.pageY);
+          if (! this.hover && hit) {
+            this.enter();
+          } else if (this.hover && ! hit) {
+            this.leave();
+          }
+        };
+      
         Drop.prototype.enter = function (event) {
-          console.log('maybe')
-          if (! this.active) { return; }
-          console.log('enter');
+          this.hover = true;
+          this.el.classList.add('droppable');
         };
       
         Drop.prototype.leave = function (event) {
-          if (! this.active) { return; }
-          console.log('leave');
-        };
-      
-        Drop.prototype.init = function () {
-          this.el.addEventListener('mouseenter', this.enter.bind(this));
-          this.el.addEventListener('mouseleave', this.leave.bind(this));
+          this.hover = false;
+          this.el.classList.remove('droppable');
         };
       
         module.exports = Drop;
