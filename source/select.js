@@ -12,22 +12,18 @@
   };
 
   Select.prototype.start = function (event) {
-
     var append = event.ctrlKey || event.metaKey;
-
-    if (this.box) {
-      this.box.remove();
-    }
+    if (this.box) { this.box.remove(); }
 
     this.box = new Box();
-    this.box.reset(event).update();
+    this.box.setStart(event);
 
-    this.items.reset(append).check(this.box);
+    this.items.reset(append).check(this.box.rect);
   };
 
   Select.prototype.move = function (event) {
-    this.box.setEnd(event).update();
-    this.items.check(this.box);
+    this.box.setEnd(event);
+    this.items.check(this.box.rect);
     this.box.render();
   };
 
