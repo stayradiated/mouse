@@ -1,7 +1,7 @@
 fs      = require 'fs'
 Scrunch = require 'coffee-scrunch'
 
-input  = './source/mouse.js'
+input  = './source/api.js'
 output = './app/mouse.js'
 
 init = (scrunch) ->
@@ -25,5 +25,6 @@ task 'build', ->
   init new Scrunch
     path: input
     compile: true
+    verbose: true
 
 
