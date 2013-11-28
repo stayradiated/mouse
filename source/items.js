@@ -81,7 +81,7 @@
     return this;
   };
 
-  Items.prototype.check = function (box) {
+  Items.prototype.check = function (rect) {
     var i, el, pos, hit;
 
     for (i = 0; i < this.elements.length; i++) {
@@ -89,11 +89,13 @@
       el = this.elements[i];
       pos = el.position;
 
+      console.log(rect);
+
       hit = !(
-        pos.left   > box.right  ||
-        pos.right  < box.left   ||
-        pos.top    > box.bottom ||
-        pos.bottom < box.top
+        pos.left   > rect.right  ||
+        pos.right  < rect.left   ||
+        pos.top    > rect.bottom ||
+        pos.bottom < rect.top
       );
 
       if ((hit && !el.selected) || (!hit && el.selected)) {
