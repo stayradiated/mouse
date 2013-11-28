@@ -7,8 +7,17 @@
   Box = require('./box');
 
   Select = function (options) {
+
+    // Set instance variables
+    this.mouse = options.mouse;
     this.items = options.items;
     this.box = null;
+
+    // Bind events
+    this.mouse.on('start-select', this.start);
+    this.mouse.on('move-select', this.move);
+    this.mouse.on('end-select', this.end);
+
   };
 
   Select.prototype.start = function (event) {

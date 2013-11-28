@@ -8,16 +8,28 @@
   PLACEHOLDER = document.createElement('div');
   PLACEHOLDER.className = 'placeholder';
 
-  Drag = function () {
+  Drag = function (options) {
+
+    // Load options
+    this.mouse = options.mouse;
+
+    // Set instance variables
     this.el = null;
     this.parent = null;
     this.offsetX = 0;
     this.offsetY = 0;
     this.oldTop = 0;
     this.oldLeft = 0;
+
+    // Bind events
+    this.mouse.on('prepare-drag', this.prepare.bind(this));
+    this.mouse.on('start-drag', this.start.bind(this));
+    this.mouse.on('move-drag', this.move.bind(this));
+    this.mouse.on('end-drag', this.end.bind(this));
+
   };
 
-  Drag.prototype.use = function(item) {
+  Drag.prototype.prepare = function(item) {
     this.item = item;
   };
 
