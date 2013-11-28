@@ -89,8 +89,6 @@
       el = this.elements[i];
       pos = el.position;
 
-      console.log(rect);
-
       hit = !(
         pos.left   > rect.right  ||
         pos.right  < rect.left   ||
