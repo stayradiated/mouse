@@ -5,6 +5,9 @@
   "scripts": {
     "test": "jshint source/*"
   },
+  "dependencies": {
+    "signals": "git://github.com/stayradiated/signals.git"
+  },
   "devDependencies": {
     "jshint": "~2.3.0",
     "coffee-scrunch": "~0.1.4"

@@ -2,11 +2,9 @@
 
   'use strict';
 
-  var Mouse, Select, Drag, Items, DEFAULT, SELECT, DRAG;
+  var smoke, Mouse, DEFAULT, SELECT, DRAG;
 
-  Select = require('./select');
-  Items = require('./elements');
-  Drag = require('./drag');
+  smoke = require('signals');
 
   // Modes
   DEFAULT = 0;
@@ -15,20 +13,10 @@
 
   Mouse = function (options) {
 
+    smoke.convert(this);
+
     this.parent = options.parent;
-
-    this.drag = new Drag({
-      parent: this.parent
-    });
-
-    this.items = new Items({
-      parent: this.parent,
-      query: options.query
-    });
-
-    this.select = new Select({
-      items: this.items
-    });
+    this.items = options.items;
 
     // Minimum distance mouse must move before considered moving
     this.min = 5;
@@ -57,10 +45,9 @@
     this.items.fetch();
     this.item = this.items.find(event.target);
 
-
     if (this.item) {
       this.mode = DRAG;
-      this.drag.use(this.item);
+      this.emit('prepare-drag', this.item);
     } else {
       this.mode = SELECT;
     }
@@ -80,9 +67,9 @@
 
     if (this.moving) {
       if (this.mode === DRAG) {
-        this.drag.move(event);
+        this.emit('move-drag', event);
       } else {
-        this.select.move(event);
+        this.emit('move-select', event);
       }
     } else if (
       Math.abs(event.x - this.start.x) > this.min ||
@@ -90,9 +77,9 @@
     ) {
       this.moving = true;
       if (this.mode === DRAG) {
-        this.drag.start(this.start);
+        this.emit('start-drag', this.start);
       } else {
-        this.select.start(this.start);
+        this.emit('start-select', this.start);
       }
     }
   };
@@ -116,9 +103,9 @@
     this.moving = false;
 
     if (this.mode === DRAG) {
-      this.drag.end();
+      this.emit('end-drag');
     } else if (this.mode === SELECT) {
-      this.select.end();
+      this.emit('end-select');
     }
 
     this.mode = DEFAULT;
@@ -135,10 +122,6 @@
     document.addEventListener('mousemove', this._move.bind(this));
     document.addEventListener('mouseup', this._up.bind(this));
   };
-
-  if (typeof window !== 'undefined') {
-    window.Mouse = Mouse;
-  }
 
   module.exports = Mouse;
 
