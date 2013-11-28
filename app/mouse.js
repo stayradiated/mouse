@@ -31,315 +31,84 @@
     [
       {
         /*
-          /Volumes/Home/Projects/Mouse/source/mouse.js
+          /Volumes/Home/Projects/Mouse/source/api.js
         */
 
-        './select': 1,
-        './elements': 3,
-        './drag': 4
+        './items': 1,
+        './mouse': 2,
+        './select': 4,
+        './drag': 7,
+        './drop': 8
       }, function(require, module, exports) {
         (function () {
       
         'use strict';
       
-        var Mouse, Select, Drag, Items, DEFAULT, SELECT, DRAG;
+        var Api;
       
+        var Items, Mouse, Select, Drag, Drop;
+      
+        Items = require('./items');
+        Mouse = require('./mouse');
         Select = require('./select');
-        Items = require('./elements');
         Drag = require('./drag');
+        Drop = require('./drop');
       
-        // Modes
-        DEFAULT = 0;
-        SELECT = 1;
-        DRAG = 2;
+        Api = function (options) {
       
-        Mouse = function (options) {
-      
+          this.drops = [];
           this.parent = options.parent;
-      
-          this.drag = new Drag({
-            parent: this.parent
-          });
       
           this.items = new Items({
             parent: this.parent,
             query: options.query
           });
       
-          this.select = new Select({
+          this.mouse = new Mouse({
+            parent: this.parent,
             items: this.items
           });
       
-          // Minimum distance mouse must move before considered moving
-          this.min = 5;
+          this.select = new Select({
+            mouse: this.mouse,
+            items: this.items
+          });
       
-          // Mouse state
-          this.down = false;
-          this.moving = false;
-          this.mode = DEFAULT;
-        };
+          this.drag = new Drag({
+            mouse: this.mouse
+          });
       
-      
-        /**
-         * Mouse down event listener
-         * - event (Event) : the mousedown event
-         * > void
-         */
-      
-        Mouse.prototype._down = function (event) {
-      
-          if (event.which != 1) {
-            return;
-          }
-      
-          this.down = true;
-          this.start = event;
-          this.items.fetch();
-          this.item = this.items.find(event.target);
-      
-      
-          if (this.item) {
-            this.mode = DRAG;
-            this.drag.use(this.item);
-          } else {
-            this.mode = SELECT;
-          }
       
         };
       
-      
-        /**
-         * Mouse move event listener
-         * - event (Event) : the mousemove event
-         * > void
-         */
-      
-        Mouse.prototype._move = function (event) {
-      
-          if (! this.down) { return; }
-      
-          if (this.moving) {
-            if (this.mode === DRAG) {
-              this.drag.move(event);
-            } else {
-              this.select.move(event);
-            }
-          } else if (
-            Math.abs(event.x - this.start.x) > this.min ||
-            Math.abs(event.y - this.start.y) > this.min
-          ) {
-            this.moving = true;
-            if (this.mode === DRAG) {
-              this.drag.start(this.start);
-            } else {
-              this.select.start(this.start);
-            }
+        Api.prototype.init = function () {
+          var i;
+          this.mouse.init();
+          for (i = 0; i < this.drops.length; i++) {
+            this.drops[i].init();
           }
         };
       
-      
-        /**
-         * Mouse up event listener
-         * - event (Event) : the mouseup event
-         * > void
-         */
-      
-        Mouse.prototype._up = function () {
-      
-          if (! this.down) { return; }
-          this.down = false;
-      
-          if (! this.moving) {
-            if (this.mode === SELECT) { this.items.clear(); }
-            return;
-          }
-          this.moving = false;
-      
-          if (this.mode === DRAG) {
-            this.drag.end();
-          } else if (this.mode === SELECT) {
-            this.select.end();
-          }
-      
-          this.mode = DEFAULT;
-        };
-      
-      
-        /**
-         * Bind the mouse events
-         * > void
-         */
-      
-        Mouse.prototype.init = function () {
-          this.parent.addEventListener('mousedown', this._down.bind(this));
-          document.addEventListener('mousemove', this._move.bind(this));
-          document.addEventListener('mouseup', this._up.bind(this));
+        Api.prototype.drop = function (el) {
+          var drop = new Drop({
+            mouse: this.mouse,
+            el: el
+          });
+          this.drops.push(drop);
         };
       
         if (typeof window !== 'undefined') {
-          window.Mouse = Mouse;
+          window.Mouse = Api;
         }
       
-        module.exports = Mouse;
-      
-      }());
-      ;
-      }
-    ], [
-      {
-        /*
-          /Volumes/Home/Projects/Mouse/source/select.js
-        */
-
-        './box': 2
-      }, function(require, module, exports) {
-        (function () {
-      
-        'use strict';
-      
-        var Box, Select;
-      
-        Box = require('./box');
-      
-        Select = function (options) {
-          this.items = options.items;
-          this.box = null;
-        };
-      
-        Select.prototype.start = function (event) {
-      
-          var append = event.ctrlKey || event.metaKey;
-      
-          if (this.box) {
-            this.box.remove();
-          }
-      
-          this.box = new Box();
-          this.box.reset(event).update();
-      
-          this.items.reset(append).check(this.box);
-        };
-      
-        Select.prototype.move = function (event) {
-          this.box.setEnd(event).update();
-          this.items.check(this.box);
-          this.box.render();
-        };
-      
-        Select.prototype.end = function () {
-          this.box.remove();
-          this.box = null;
-          this.items.select();
-        };
-      
-        module.exports = Select;
-      
-      }());
-      ;
-      }
-    ], [
-      {
-        /*
-          /Volumes/Home/Projects/Mouse/source/box.js
-        */
-
-      }, function(require, module, exports) {
-        (function () {
-      
-        'use strict';
-      
-        var Box;
-      
-        Box = function () {
-      
-          // Create dom element
-          this.el = document.createElement('div');
-          this.el.className = Box.className;
-          document.body.appendChild(this.el);
-      
-          this.el.style.left   = '-10px';
-          this.el.style.top    = '-10px';
-          this.el.style.width  = 0;
-          this.el.style.height = 0;
-      
-          this.mouse = {
-            start: {},
-            end: {}
-          };
-      
-        };
-      
-        Box.className = 'select_js_box';
-      
-        Box.prototype.setStart = function (position) {
-          this.mouse.start.x = position.pageX;
-          this.mouse.start.y = position.pageY;
-          return this;
-        };
-      
-        Box.prototype.setEnd = function (position) {
-          this.mouse.end.x = position.pageX;
-          this.mouse.end.y = position.pageY;
-          return this;
-        };
-      
-        Box.prototype.reset = function (position) {
-          this.setStart(position);
-          this.setEnd(position);
-          return this;
-        };
-      
-        Box.prototype.remove = function () {
-          var el = this.el;
-          el.className += ' hide';
-          setTimeout(function () {
-            document.body.removeChild(el);
-          }, 200);
-          return this;
-        };
-      
-        Box.prototype.render = function () {
-          this.el.style.top    = this.top + 'px';
-          this.el.style.left   = this.left + 'px';
-          this.el.style.width  = this.right - this.left + 'px';
-          this.el.style.height = this.bottom - this.top + 'px';
-          return this;
-        };
-      
-        Box.prototype.update = function () {
-          var start, end;
-      
-          end          = this.mouse.end;
-          start        = this.mouse.start;
-      
-          if (end.x > start.x) {
-            this.left  = start.x;
-            this.right = end.x;
-          } else {
-            this.left  = end.x;
-            this.right = start.x;
-          }
-      
-          if (end.y > start.y) {
-            this.top    = start.y;
-            this.bottom = end.y;
-          } else {
-            this.top    = end.y;
-            this.bottom = start.y;
-          }
-      
-          return this;
-      
-        };
-      
-        module.exports = Box;
+        module.exports = Api;
       
       }());;
       }
     ], [
       {
         /*
-          /Volumes/Home/Projects/Mouse/source/elements.js
+          /Volumes/Home/Projects/Mouse/source/items.js
         */
 
       }, function(require, module, exports) {
@@ -426,7 +195,7 @@
           return this;
         };
       
-        Items.prototype.check = function (box) {
+        Items.prototype.check = function (rect) {
           var i, el, pos, hit;
       
           for (i = 0; i < this.elements.length; i++) {
@@ -435,10 +204,10 @@
             pos = el.position;
       
             hit = !(
-              pos.left   > box.right  ||
-              pos.right  < box.left   ||
-              pos.top    > box.bottom ||
-              pos.bottom < box.top
+              pos.left   > rect.right  ||
+              pos.right  < rect.left   ||
+              pos.top    > rect.bottom ||
+              pos.bottom < rect.top
             );
       
             if ((hit && !el.selected) || (!hit && el.selected)) {
@@ -482,6 +251,436 @@
     ], [
       {
         /*
+          /Volumes/Home/Projects/Mouse/source/mouse.js
+        */
+
+        'signals': 3
+      }, function(require, module, exports) {
+        (function () {
+      
+        'use strict';
+      
+        var smoke, Mouse, DEFAULT, SELECT, DRAG;
+      
+        smoke = require('signals');
+      
+        // Modes
+        DEFAULT = 0;
+        SELECT = 1;
+        DRAG = 2;
+      
+        Mouse = function (options) {
+      
+          smoke.convert(this);
+      
+          this.parent = options.parent;
+          this.items = options.items;
+      
+          // Minimum distance mouse must move before considered moving
+          this.min = 5;
+      
+          // Mouse state
+          this.down = false;
+          this.moving = false;
+          this.mode = DEFAULT;
+        };
+      
+      
+        /**
+         * Mouse down event listener
+         * - event (Event) : the mousedown event
+         * > void
+         */
+      
+        Mouse.prototype._down = function (event) {
+      
+          if (event.which != 1) {
+            return;
+          }
+      
+          this.down = true;
+          this.start = event;
+          this.items.fetch();
+          this.item = this.items.find(event.target);
+      
+          if (this.item) {
+            this.mode = DRAG;
+            this.emit('prepare-drag', this.item);
+          } else {
+            this.mode = SELECT;
+          }
+      
+        };
+      
+      
+        /**
+         * Mouse move event listener
+         * - event (Event) : the mousemove event
+         * > void
+         */
+      
+        Mouse.prototype._move = function (event) {
+      
+          if (! this.down) { return; }
+      
+          if (this.moving) {
+            if (this.mode === DRAG) {
+              this.emit('move-drag', event);
+            } else {
+              this.emit('move-select', event);
+            }
+          } else if (
+            Math.abs(event.x - this.start.x) > this.min ||
+            Math.abs(event.y - this.start.y) > this.min
+          ) {
+            this.moving = true;
+            if (this.mode === DRAG) {
+              this.emit('start-drag', this.start);
+            } else {
+              this.emit('start-select', this.start);
+            }
+          }
+        };
+      
+      
+        /**
+         * Mouse up event listener
+         * - event (Event) : the mouseup event
+         * > void
+         */
+      
+        Mouse.prototype._up = function () {
+      
+          if (! this.down) { return; }
+          this.down = false;
+      
+          if (! this.moving) {
+            if (this.mode === SELECT) { this.items.clear(); }
+            return;
+          }
+          this.moving = false;
+      
+          if (this.mode === DRAG) {
+            this.emit('end-drag');
+          } else if (this.mode === SELECT) {
+            this.emit('end-select');
+          }
+      
+          this.mode = DEFAULT;
+        };
+      
+      
+        /**
+         * Bind the mouse events
+         * > void
+         */
+      
+        Mouse.prototype.init = function () {
+          this.parent.addEventListener('mousedown', this._down.bind(this));
+          document.addEventListener('mousemove', this._move.bind(this));
+          document.addEventListener('mouseup', this._up.bind(this));
+        };
+      
+        module.exports = Mouse;
+      
+      }());
+      ;
+      }
+    ], [
+      {
+        /*
+          /Volumes/Home/Projects/Mouse/node_modules/signals/index.js
+        */
+
+      }, function(require, module, exports) {
+        // in a few cases we've chosen optimizing script length over efficiency of code.
+      // I think that is the right choice for this library.  If you're adding and
+      // triggering A LOT of events, you might want to use a different library.
+      var smokesignals = {
+          convert: function(obj, handlers) {
+              // we store the list of handlers as a local variable inside the scope
+              // so that we don't have to add random properties to the object we are
+              // converting. (prefixing variables in the object with an underscore or
+              // two is an ugly solution)
+              //      we declare the variable in the function definition to use two less
+              //      characters (as opposed to using 'var ').  I consider this an inelegant
+              //      solution since smokesignals.convert.length now returns 2 when it is
+              //      really 1, but doing this doesn't otherwise change the functionallity of
+              //      this module, so we'll go with it for now
+              handlers = {};
+      
+              // add a listener
+              obj.on = function(eventName, handler) {
+                  // either use the existing array or create a new one for this event
+                  //      this isn't the most efficient way to do this, but is the shorter
+                  //      than other more efficient ways, so we'll go with it for now.
+                  (handlers[eventName] = handlers[eventName] || [])
+                      // add the handler to the array
+                      .push(handler);
+      
+                  return obj;
+              };
+      
+              // add a listener that will only be called once
+              obj.once = function(eventName, handler) {
+                  // create a wrapper listener, that will remove itself after it is called
+                  function wrappedHandler() {
+                      // remove ourself, and then call the real handler with the args
+                      // passed to this wrapper
+                      handler.apply(obj.off(eventName, wrappedHandler), arguments);
+                  }
+                  // in order to allow that these wrapped handlers can be removed by
+                  // removing the original function, we save a reference to the original
+                  // function
+                  wrappedHandler.h = handler;
+      
+                  // call the regular add listener function with our new wrapper
+                  return obj.on(eventName, wrappedHandler);
+              };
+      
+              // remove a listener
+              obj.off = function(eventName, handler) {
+                  // loop through all handlers for this eventName, assuming a handler
+                  // was passed in, to see if the handler passed in was any of them so
+                  // we can remove it
+                  //      it would be more efficient to stash the length and compare i
+                  //      to that, but that is longer so we'll go with this.
+                  for (var list = handlers[eventName], i = 0; handler && list && list[i]; i++) {
+                      // either this item is the handler passed in, or this item is a
+                      // wrapper for the handler passed in.  See the 'once' function
+                      list[i] != handler && list[i].h != handler ||
+                          // remove it!
+                          list.splice(i--,1);
+                  }
+                  // if i is 0 (i.e. falsy), then there are no items in the array for this
+                  // event name (or the array doesn't exist)
+                  if (!i) {
+                      // remove the array for this eventname (if it doesn't exist then
+                      // this isn't really hurting anything)
+                      delete handlers[eventName];
+                  }
+                  return obj;
+              };
+      
+              obj.emit = function(eventName) {
+                  // loop through all handlers for this event name and call them all
+                  //      it would be more efficient to stash the length and compare i
+                  //      to that, but that is longer so we'll go with this.
+                  for(var list = handlers[eventName], i = 0; list && list[i];) {
+                      list[i++].apply(obj, list.slice.call(arguments, 1));
+                  }
+                  return obj;
+              };
+      
+              return obj;
+          }
+      };
+      
+      module.exports = smokesignals;
+      ;
+      }
+    ], [
+      {
+        /*
+          /Volumes/Home/Projects/Mouse/source/select.js
+        */
+
+        './box': 5
+      }, function(require, module, exports) {
+        (function () {
+      
+        'use strict';
+      
+        var Box, Select;
+      
+        Box = require('./box');
+      
+        Select = function (options) {
+      
+          // Set instance variables
+          this.mouse = options.mouse;
+          this.items = options.items;
+          this.box = null;
+      
+          // Bind events
+          this.mouse.on('start-select', this.start);
+          this.mouse.on('move-select', this.move);
+          this.mouse.on('end-select', this.end);
+      
+        };
+      
+        Select.prototype.start = function (event) {
+          var append = event.ctrlKey || event.metaKey;
+          if (this.box) { this.box.remove(); }
+      
+          this.box = new Box();
+          this.box.setStart(event);
+      
+          this.items.reset(append).check(this.box.rect);
+        };
+      
+        Select.prototype.move = function (event) {
+          this.box.setEnd(event);
+          this.items.check(this.box.rect);
+          this.box.render();
+        };
+      
+        Select.prototype.end = function () {
+          this.box.remove();
+          this.box = null;
+          this.items.select();
+        };
+      
+        module.exports = Select;
+      
+      }());
+      ;
+      }
+    ], [
+      {
+        /*
+          /Volumes/Home/Projects/Mouse/source/box.js
+        */
+
+        './rectangle': 6
+      }, function(require, module, exports) {
+        (function () {
+      
+        'use strict';
+      
+        var Box, Rectangle;
+      
+        Rectangle = require('./rectangle');
+      
+        Box = function () {
+      
+          // Create dom element
+          this.el = document.createElement('div');
+          this.el.className = Box.className;
+          document.body.appendChild(this.el);
+      
+          // TODO: Do this via css?
+          this.el.style.left   = '-10px';
+          this.el.style.top    = '-10px';
+          this.el.style.width  = 0;
+          this.el.style.height = 0;
+      
+          this.rect = new Rectangle();
+      
+        };
+      
+        Box.className = 'select_js_box';
+      
+        Box.prototype.setStart = function (event) {
+          this.rect.setStart(event.pageX, event.pageY);
+          return this;
+        };
+      
+        Box.prototype.setEnd = function (event) {
+          this.rect.setEnd(event.pageX, event.pageY);
+          return this;
+        };
+      
+        Box.prototype.remove = function () {
+          var el = this.el;
+          el.className += ' hide';
+          setTimeout(function () {
+            document.body.removeChild(el);
+          }, 200); // Fade out time
+          return this;
+        };
+      
+        Box.prototype.render = function () {
+          this.el.style.top    = this.rect.top + 'px';
+          this.el.style.left   = this.rect.left + 'px';
+          this.el.style.width  = this.rect.width + 'px';
+          this.el.style.height = this.rect.height + 'px';
+          return this;
+        };
+      
+        module.exports = Box;
+      
+      }());;
+      }
+    ], [
+      {
+        /*
+          /Volumes/Home/Projects/Mouse/source/rectangle.js
+        */
+
+      }, function(require, module, exports) {
+        (function () {
+      
+        'use strict';
+      
+        var Rectangle;
+      
+        Rectangle = function () {
+      
+          this.top = 0;
+          this.left = 0;
+          this.bottom = 0;
+          this.right = 0;
+      
+          this.width = 0;
+          this.height = 0;
+      
+          this.startX = 0;
+          this.startY = 0;
+          this.endX = 0;
+          this.endY = 0;
+      
+        };
+      
+        Rectangle.prototype.setStart = function (x, y) {
+      
+          this.startX = x;
+          this.startY = y;
+          this.update();
+      
+          return this;
+        };
+      
+        Rectangle.prototype.setEnd = function (x, y) {
+      
+          this.endX = x;
+          this.endY = y;
+          this.update();
+      
+          return this;
+        };
+      
+        Rectangle.prototype.update = function () {
+      
+          if (this.endX > this.startX) {
+            this.left = this.startX;
+            this.right = this.endX;
+          } else {
+            this.left = this.endX;
+            this.right = this.startX;
+          }
+      
+          if (this.endY > this.startY) {
+            this.top = this.startY;
+            this.bottom = this.endY;
+          } else {
+            this.top = this.endY;
+            this.bottom = this.startY;
+          }
+      
+          this.height = this.bottom - this.top;
+          this.width = this.right - this.left;
+      
+          return this;
+        };
+      
+        module.exports = Rectangle;
+      
+      }());;
+      }
+    ], [
+      {
+        /*
           /Volumes/Home/Projects/Mouse/source/drag.js
         */
 
@@ -496,16 +695,28 @@
         PLACEHOLDER = document.createElement('div');
         PLACEHOLDER.className = 'placeholder';
       
-        Drag = function () {
+        Drag = function (options) {
+      
+          // Load options
+          this.mouse = options.mouse;
+      
+          // Set instance variables
           this.el = null;
           this.parent = null;
           this.offsetX = 0;
           this.offsetY = 0;
           this.oldTop = 0;
           this.oldLeft = 0;
+      
+          // Bind events
+          this.mouse.on('prepare-drag', this.prepare.bind(this));
+          this.mouse.on('start-drag', this.start.bind(this));
+          this.mouse.on('move-drag', this.move.bind(this));
+          this.mouse.on('end-drag', this.end.bind(this));
+      
         };
       
-        Drag.prototype.use = function(item) {
+        Drag.prototype.prepare = function(item) {
           this.item = item;
         };
       
@@ -546,6 +757,63 @@
       
       
         module.exports = Drag;
+      
+      }());;
+      }
+    ], [
+      {
+        /*
+          /Volumes/Home/Projects/Mouse/source/drop.js
+        */
+
+      }, function(require, module, exports) {
+        (function () {
+      
+        'use strict';
+      
+        var Drop;
+      
+        Drop = function (options) {
+      
+          // Load options
+          this.mouse = options.mouse;
+          this.el = options.el;
+      
+          // Instance variables
+          this.hover = false;
+          this.active = false;
+      
+          // Events
+          this.mouse.on('start-drag', this.activate.bind(this));
+          this.mouse.on('end-drag', this.deactivate.bind(this));
+      
+        };
+      
+        Drop.prototype.activate = function () {
+          this.active = true;
+        };
+      
+        Drop.prototype.deactivate = function () {
+          this.active = false;
+        };
+      
+        Drop.prototype.enter = function (event) {
+          console.log('maybe')
+          if (! this.active) { return; }
+          console.log('enter');
+        };
+      
+        Drop.prototype.leave = function (event) {
+          if (! this.active) { return; }
+          console.log('leave');
+        };
+      
+        Drop.prototype.init = function () {
+          this.el.addEventListener('mouseenter', this.enter.bind(this));
+          this.el.addEventListener('mouseleave', this.leave.bind(this));
+        };
+      
+        module.exports = Drop;
       
       }());;
       }
