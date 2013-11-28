@@ -18,8 +18,6 @@
     this.parent = null;
     this.offsetX = 0;
     this.offsetY = 0;
-    this.oldTop = 0;
-    this.oldLeft = 0;
 
     // Bind events
     this.mouse.on('prepare-drag', this.prepare.bind(this));
@@ -39,33 +37,35 @@
     this.offsetX = event.offsetX;
     this.offsetY = event.offsetY;
 
-    // Save original position
-    this.oldTop = this.item.style.top;
-    this.oldLeft = this.item.style.left;
-
     // Set parent and add placeholder
     this.parent = this.item.parentElement;
     this.parent.insertBefore(PLACEHOLDER, this.item);
 
+    // Clone item
+    this.clone = this.item.cloneNode(true);
+
+    // Hide current itemm
+    this.item.classList.add('hidden');
+
     // Make draggable
-    this.item.classList.add('draggable');
+    document.body.appendChild(this.clone);
+    this.clone.classList.add('draggable');
     this.move(event);
   };
 
   Drag.prototype.move = function (event) {
-    this.item.style.top = event.pageY - this.offsetY + 'px';
-    this.item.style.left = event.pageX - this.offsetX + 'px';
+    this.clone.style.top = window.pageYOffset + event.pageY - this.offsetY + 'px';
+    this.clone.style.left = window.pageXOffset + event.pageX - this.offsetX + 'px';
   };
 
   Drag.prototype.end = function () {
 
-    // Remove placeholder
+    // Remove placeholder and helper
     this.parent.removeChild(PLACEHOLDER);
+    document.body.removeChild(this.clone);
 
     // Revert element to it's original position
-    this.item.classList.remove('draggable');
-    this.item.style.top = this.oldTop;
-    this.item.style.left = this.oldLeft;
+    this.item.classList.remove('hidden');
   };
 
 

@@ -48,6 +48,10 @@
     this.drops.push(drop);
   };
 
+  Api.prototype.on = function () {
+    this.mouse.on.apply(this.mouse, arguments);
+  };
+
   if (typeof window !== 'undefined') {
     window.Mouse = Api;
   }

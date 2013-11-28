@@ -1,4 +1,5 @@
 body {
+  font: 20px/50px monospace;
   background: url('bg.png');
   cursor: default;
   -webkit-user-select: none;
@@ -23,7 +24,6 @@ body {
 }
 
 .selectables {
-  background: rgba(255,0,0,0.2);
   position: absolute;
   top: 0;
   left: 0;
@@ -32,8 +32,10 @@ body {
   overflow: auto;
 }
 
-.selectables div {
+.item, .placeholder {
   display: inline-block;
+  text-align: center;
+  vertical-align: top;
   background: #ccc;
   margin: 20px;
   width: 50px;
@@ -42,11 +44,17 @@ body {
   border: 5px solid #eee;
 }
 
-.selectables .selected {
-  background: rgba(30, 30, 200, 0.3);
+.item.selected {
+  color: #fff;
+  border-color: #08c;
+  background: #004568;
 }
 
-.selectables .draggable {
+.item.hidden {
+  display: none;
+}
+
+.item.draggable {
   position: absolute;
   margin: 0;
   z-index: 20;
@@ -64,8 +72,9 @@ body {
   bottom: 0;
   right: 0;
   height: 150px;
+  transition: background 0.15s ease;
 }
 
 .drop-zone.droppable {
-  background: black;
+  background: rgba(100,100,100,0.4);
 }

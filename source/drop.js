@@ -30,6 +30,10 @@
 
   Drop.prototype.deactivate = function () {
     this.active = false;
+    if (this.hover) {
+      this.mouse.emit('drop', this.mouse.item, this.el);
+      this.leave();
+    }
   };
 
   Drop.prototype.move = function (event) {
