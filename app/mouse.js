@@ -35,8 +35,8 @@
         */
 
         './items': 1,
-        './mouse': 2,
-        './select': 4,
+        './mouse': 3,
+        './select': 5,
         './drag': 7,
         './drop': 8
       }, function(require, module, exports) {
@@ -111,11 +111,15 @@
           /Volumes/Home/Projects/Mouse/source/items.js
         */
 
+        './rectangle': 2
       }, function(require, module, exports) {
         (function () {
         'use strict';
       
-        var Items;
+        var Items, Rectangle;
+      
+        Rectangle = require('./rectangle');
+      
       
         Items = function (options) {
           this.parent = options.parent;
@@ -167,7 +171,7 @@
       
       
         Items.prototype.reset = function (append) {
-          var i, el, rect, pos;
+          var i, el;
       
           for (i = 0; i < this.elements.length; i++) {
       
@@ -177,19 +181,9 @@
               this.clearItem(el);
             }
       
-            rect = el.getBoundingClientRect();
+            el.rect = new Rectangle(el.getBoundingClientRect());
+            // el.rect.move(window.pageXOffset, window.pageYOffset);
       
-            pos = {
-              top: rect.top + window.pageYOffset,
-              left: rect.left + window.pageXOffset,
-            };
-      
-            el.position = {
-              top: pos.top,
-              left: pos.left,
-              bottom: pos.top + rect.height,
-              right: pos.left + rect.width
-            };
           }
       
           return this;
@@ -201,7 +195,7 @@
           for (i = 0; i < this.elements.length; i++) {
       
             el = this.elements[i];
-            pos = el.position;
+            pos = el.rect;
       
             hit = !(
               pos.left   > rect.right  ||
@@ -251,10 +245,107 @@
     ], [
       {
         /*
+          /Volumes/Home/Projects/Mouse/source/rectangle.js
+        */
+
+      }, function(require, module, exports) {
+        (function () {
+      
+        'use strict';
+      
+        var Rectangle;
+      
+        Rectangle = function (rect) {
+      
+          this.top = 0;
+          this.left = 0;
+          this.width = 0;
+          this.height = 0;
+          this.bottom = 0;
+          this.right = 0;
+          this.startX = 0;
+          this.startY = 0;
+          this.endX = 0;
+          this.endY = 0;
+      
+          if (rect) {
+            this.set(rect);
+          }
+      
+        };
+      
+        Rectangle.prototype.set = function (rect) {
+          this.startX = rect.top;
+          this.startY = rect.left;
+          this.endX = rect.right;
+          this.endY = rect.bottom;
+          this.update();
+          console.log({
+            top: this.top - rect.top,
+            bottom: this.bottom - rect.bottom
+          })
+        };
+      
+        Rectangle.prototype.setStart = function (x, y) {
+      
+          this.startX = x;
+          this.startY = y;
+          this.update();
+      
+          return this;
+        };
+      
+        Rectangle.prototype.setEnd = function (x, y) {
+      
+          this.endX = x;
+          this.endY = y;
+          this.update();
+      
+          return this;
+        };
+      
+        Rectangle.prototype.update = function () {
+      
+          if (this.endX > this.startX) {
+            this.left = this.startX;
+            this.right = this.endX;
+          } else {
+            this.left = this.endX;
+            this.right = this.startX;
+          }
+      
+          if (this.endY > this.startY) {
+            this.top = this.startY;
+            this.bottom = this.endY;
+          } else {
+            this.top = this.endY;
+            this.bottom = this.startY;
+          }
+      
+          this.height = this.bottom - this.top;
+          this.width = this.right - this.left;
+      
+          return this;
+        };
+      
+        Rectangle.prototype.move = function(x, y) {
+          this.left += x;
+          this.right += x;
+          this.top += y;
+          this.bottom += y;
+        };
+      
+        module.exports = Rectangle;
+      
+      }());;
+      }
+    ], [
+      {
+        /*
           /Volumes/Home/Projects/Mouse/source/mouse.js
         */
 
-        'signals': 3
+        'signals': 4
       }, function(require, module, exports) {
         (function () {
       
@@ -485,7 +576,7 @@
           /Volumes/Home/Projects/Mouse/source/select.js
         */
 
-        './box': 5
+        './box': 6
       }, function(require, module, exports) {
         (function () {
       
@@ -542,7 +633,7 @@
           /Volumes/Home/Projects/Mouse/source/box.js
         */
 
-        './rectangle': 6
+        './rectangle': 2
       }, function(require, module, exports) {
         (function () {
       
@@ -599,82 +690,6 @@
         };
       
         module.exports = Box;
-      
-      }());;
-      }
-    ], [
-      {
-        /*
-          /Volumes/Home/Projects/Mouse/source/rectangle.js
-        */
-
-      }, function(require, module, exports) {
-        (function () {
-      
-        'use strict';
-      
-        var Rectangle;
-      
-        Rectangle = function () {
-      
-          this.top = 0;
-          this.left = 0;
-          this.bottom = 0;
-          this.right = 0;
-      
-          this.width = 0;
-          this.height = 0;
-      
-          this.startX = 0;
-          this.startY = 0;
-          this.endX = 0;
-          this.endY = 0;
-      
-        };
-      
-        Rectangle.prototype.setStart = function (x, y) {
-      
-          this.startX = x;
-          this.startY = y;
-          this.update();
-      
-          return this;
-        };
-      
-        Rectangle.prototype.setEnd = function (x, y) {
-      
-          this.endX = x;
-          this.endY = y;
-          this.update();
-      
-          return this;
-        };
-      
-        Rectangle.prototype.update = function () {
-      
-          if (this.endX > this.startX) {
-            this.left = this.startX;
-            this.right = this.endX;
-          } else {
-            this.left = this.endX;
-            this.right = this.startX;
-          }
-      
-          if (this.endY > this.startY) {
-            this.top = this.startY;
-            this.bottom = this.endY;
-          } else {
-            this.top = this.endY;
-            this.bottom = this.startY;
-          }
-      
-          this.height = this.bottom - this.top;
-          this.width = this.right - this.left;
-      
-          return this;
-        };
-      
-        module.exports = Rectangle;
       
       }());;
       }

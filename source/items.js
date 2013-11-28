@@ -1,7 +1,10 @@
 (function () {
   'use strict';
 
-  var Items;
+  var Items, Rectangle;
+
+  Rectangle = require('./rectangle');
+
 
   Items = function (options) {
     this.parent = options.parent;
@@ -53,7 +56,7 @@
 
 
   Items.prototype.reset = function (append) {
-    var i, el, rect, pos;
+    var i, el;
 
     for (i = 0; i < this.elements.length; i++) {
 
@@ -63,19 +66,9 @@
         this.clearItem(el);
       }
 
-      rect = el.getBoundingClientRect();
+      el.rect = new Rectangle(el.getBoundingClientRect());
+      // el.rect.move(window.pageXOffset, window.pageYOffset);
 
-      pos = {
-        top: rect.top + window.pageYOffset,
-        left: rect.left + window.pageXOffset,
-      };
-
-      el.position = {
-        top: pos.top,
-        left: pos.left,
-        bottom: pos.top + rect.height,
-        right: pos.left + rect.width
-      };
     }
 
     return this;
@@ -87,7 +80,7 @@
     for (i = 0; i < this.elements.length; i++) {
 
       el = this.elements[i];
-      pos = el.position;
+      pos = el.rect;
 
       hit = !(
         pos.left   > rect.right  ||
