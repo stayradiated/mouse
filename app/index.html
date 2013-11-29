@@ -26,9 +26,11 @@
         query: '.selectables div'
     });
     mouse.addDrop(document.querySelector('.drop-zone'));
-    mouse.on('drop', function (element, zone) {
+    mouse.on('drop', function (elements, zone) {
       var selectables = document.querySelector('.selectables');
-      selectables.removeChild(element);
+      for (var i = 0; i < elements.length; i++) {
+        selectables.removeChild(elements[i]);
+      }
     });
     mouse.init();
   </script>

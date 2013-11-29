@@ -47,7 +47,7 @@
 
     if (this.item) {
       this.mode = DRAG;
-      this.emit('prepare-drag', this.item);
+      this.emit('prepare-drag', this.items.selected);
     } else {
       this.mode = SELECT;
     }

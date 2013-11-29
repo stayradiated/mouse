@@ -35,7 +35,7 @@
   Drop.prototype.deactivate = function () {
     this.active = false;
     if (this.hover) {
-      this.mouse.emit('drop', this.mouse.item, this.el);
+      this.mouse.emit('drop', this.mouse.items.selected, this.el);
       this.leave();
     }
   };

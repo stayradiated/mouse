@@ -31,7 +31,7 @@
     [
       {
         /*
-          /Volumes/Home/Projects/Mouse/source/api.js
+          /home/stayrad/Projects/Mouse/source/api.js
         */
 
         './items': 1,
@@ -114,7 +114,7 @@
     ], [
       {
         /*
-          /Volumes/Home/Projects/Mouse/source/items.js
+          /home/stayrad/Projects/Mouse/source/items.js
         */
 
         './rectangle': 2
@@ -241,7 +241,7 @@
     ], [
       {
         /*
-          /Volumes/Home/Projects/Mouse/source/rectangle.js
+          /home/stayrad/Projects/Mouse/source/rectangle.js
         */
 
       }, function(require, module, exports) {
@@ -363,7 +363,7 @@
     ], [
       {
         /*
-          /Volumes/Home/Projects/Mouse/source/mouse.js
+          /home/stayrad/Projects/Mouse/source/mouse.js
         */
 
         'signals': 4
@@ -417,7 +417,7 @@
       
           if (this.item) {
             this.mode = DRAG;
-            this.emit('prepare-drag', this.item);
+            this.emit('prepare-drag', this.items.selected);
           } else {
             this.mode = SELECT;
           }
@@ -501,7 +501,7 @@
     ], [
       {
         /*
-          /Volumes/Home/Projects/Mouse/node_modules/signals/index.js
+          /home/stayrad/Projects/Mouse/node_modules/signals/index.js
         */
 
       }, function(require, module, exports) {
@@ -594,7 +594,7 @@
     ], [
       {
         /*
-          /Volumes/Home/Projects/Mouse/source/select.js
+          /home/stayrad/Projects/Mouse/source/select.js
         */
 
         './box': 6
@@ -651,7 +651,7 @@
     ], [
       {
         /*
-          /Volumes/Home/Projects/Mouse/source/box.js
+          /home/stayrad/Projects/Mouse/source/box.js
         */
 
         './rectangle': 2
@@ -717,7 +717,7 @@
     ], [
       {
         /*
-          /Volumes/Home/Projects/Mouse/source/drag.js
+          /home/stayrad/Projects/Mouse/source/drag.js
         */
 
       }, function(require, module, exports) {
@@ -737,69 +737,107 @@
           this.mouse = options.mouse;
       
           // Set instance variables
-          this.el = null;
           this.parent = null;
-          this.offsetX = 0;
-          this.offsetY = 0;
+          this.items = [];
+          this.clones = [];
+          this.placeholders = [];
+          this.offsets = [];
       
           // Bind events
-          this.mouse.on('prepare-drag', this.prepare.bind(this));
+          this.mouse.on('prepare-drag', this.setItems.bind(this));
           this.mouse.on('start-drag', this.start.bind(this));
           this.mouse.on('move-drag', this.move.bind(this));
           this.mouse.on('end-drag', this.end.bind(this));
       
         };
       
-        Drag.prototype.prepare = function (item) {
-          this.item = item;
+      
+        /**
+         * Set the items that will be dragged
+         * - items (Array) : an array of dom elements (with the same parent)
+         */
+      
+        Drag.prototype.setItems = function (items) {
+          this.items = items;
+          this.parent = items[0].parentElement;
         };
       
         Drag.prototype.start = function (event) {
       
-          // Store variables
-          this.offsetX = event.offsetX;
-          this.offsetY = event.offsetY;
+          var i, item, clone, placeholder, len = this.items.length;
       
-          // Set parent and add placeholder
-          this.parent = this.item.parentElement;
-          this.parent.insertBefore(PLACEHOLDER, this.item);
+          for (i = 0; i < len; i++) {
       
-          // Clone item
-          this.clone = this.item.cloneNode(true);
+            item = this.items[i];
       
-          // Hide current itemm
-          this.item.classList.add('hidden');
+            // Save offset
+            this.offsets.push({
+              top: item.offsetTop - event.pageY,
+              left: item.offsetLeft - event.pageX
+            });
       
-          // Make draggable
-          document.body.appendChild(this.clone);
-          this.clone.classList.add('draggable');
+            // Add placeholder
+            placeholder = PLACEHOLDER.cloneNode();
+            this.placeholders.push(placeholder);
+            this.parent.insertBefore(placeholder, item);
+      
+            // Clone item
+            clone = item.cloneNode(true);
+            this.clones.push(clone);
+      
+            // Hide current itemm
+            item.classList.add('hidden')
+      
+            // Make draggable
+            document.body.appendChild(clone);
+            clone.classList.add('draggable');
+          }
+      
           this.move(event);
         };
       
         Drag.prototype.move = function (event) {
-          this.clone.style.top = window.pageYOffset + event.pageY - this.offsetY + 'px';
-          this.clone.style.left = window.pageXOffset + event.pageX - this.offsetX + 'px';
+          var i, item, offset, len = this.clones.length;
+          for (i = 0; i < len; i++) {
+            item = this.clones[i];
+            offset = this.offsets[i];
+            item.style.top  = offset.top  + window.pageYOffset + event.pageY + 'px';
+            item.style.left = offset.left + window.pageXOffset + event.pageX + 'px';
+          }
         };
       
         Drag.prototype.end = function () {
       
-          // Remove placeholder and helper
-          this.parent.removeChild(PLACEHOLDER);
-          document.body.removeChild(this.clone);
+          var i, len = this.items.length;
       
-          // Revert element to it's original position
-          this.item.classList.remove('hidden');
+          for (i = 0; i < len; i++) {
+      
+            // Remove placeholder
+            this.parent.removeChild(this.placeholders[i]);
+      
+            // Remove clone
+            document.body.removeChild(this.clones[i]);
+      
+            // Show original item
+            this.items[i].classList.remove('hidden');
+          }
+      
+          this.clones = [];
+          this.placeholders = [];
+          this.offsets = [];
+      
         };
       
       
         module.exports = Drag;
       
-      }());;
+      }());
+      ;
       }
     ], [
       {
         /*
-          /Volumes/Home/Projects/Mouse/source/drop.js
+          /home/stayrad/Projects/Mouse/source/drop.js
         */
 
         './rectangle': 2
@@ -841,7 +879,7 @@
         Drop.prototype.deactivate = function () {
           this.active = false;
           if (this.hover) {
-            this.mouse.emit('drop', this.mouse.item, this.el);
+            this.mouse.emit('drop', this.mouse.items.selected, this.el);
             this.leave();
           }
         };
