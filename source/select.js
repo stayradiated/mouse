@@ -32,7 +32,7 @@
 
   Select.prototype.prepare = function (event) {
     if (! this.holdingAppend(event)) {
-      this.items.clear();
+      this.items.deselectAll();
     }
   };
 
@@ -43,7 +43,11 @@
     this.box = new Box();
     this.box.setStart(event);
 
-    this.items.reset(append);
+    if (! append) {
+      this.items.deselectAll();
+    }
+
+    this.items.refreshPosition();
     this.items.check(this.box.rect);
   };
 

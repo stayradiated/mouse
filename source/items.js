@@ -40,7 +40,12 @@
   };
 
 
-  Items.prototype.clearItem = function (item) {
+  /**
+   * Deselect a selected item
+   * - item (Element) : a selected item
+   */
+
+  Items.prototype.deselectItem = function (item) {
     var index = this.selected.indexOf(item);
     item.classList.remove('selected');
     item.selected = false;
@@ -48,15 +53,26 @@
   };
 
 
+  /**
+   * Select an item
+   * - item (Element) : an element to select
+   */
+
   Items.prototype.selectItem = function (item) {
     item.classList.add('selected');
     item.selected = true;
     this.selected.push(item);
   };
 
-  Items.prototype.clear = function () {
+
+  /**
+   * Deselect all selected items
+   */
+
+  Items.prototype.deselectAll = function () {
     var i, item, len = this.selected.length;
     for (i = 0; i < len; i++) {
+      item = this.selected[i];
       item.classList.remove('selected');
       item.selected = false;
     }
@@ -64,31 +80,33 @@
   };
 
 
-  Items.prototype.reset = function (append) {
-    var i, el;
+  /**
+   * Cache the coordinates of each of the items
+   */
 
-    for (i = 0; i < this.elements.length; i++) {
-
+  Items.prototype.refreshPosition = function () {
+    var i, el, len = this.elements.length;
+    for (i = 0; i < len; i++) {
       el = this.elements[i];
-
-      if (! append) {
-        this.clearItem(el);
-      }
-
       el.rect = new Rectangle(el.getBoundingClientRect());
       el.rect.move(window.pageXOffset, window.pageYOffset);
-
     }
-
   };
 
-  Items.prototype.check = function (box) {
-    var i, el, hit;
-    for (i = 0; i < this.elements.length; i++) {
 
+  /**
+   * Quickly check each of the items to see if they touch the box
+   * Important: You must run finishCheck() afterwards.
+   * - box (Rectangle) : the box to check the items against
+   */
+
+  Items.prototype.check = function (box) {
+    var i, el, hit, len = this.elements.length;
+    for (i = 0; i < len; i++) {
       el = this.elements[i];
       hit = box.touching(el.rect);
 
+      // if hit and not selected or if not hit and selected
       if ((hit && !el.selected) || (!hit && el.selected)) {
         el.classList.add('selected');
         el._temp_selected = true;
@@ -99,9 +117,13 @@
     }
   };
 
+
+  /**
+   * Select the temporary selected items
+   */
+
   Items.prototype.finishCheck = function () {
     var i, el, len = this.elements.length;
-
     this.selected = [];
 
     for (i = 0; i < len; i++) {

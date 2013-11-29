@@ -47,16 +47,20 @@
       return;
     }
 
+    this.appending = false;
     this.down = true;
     this.start = event;
     this.items.fetch();
     this.item = this.items.find(event.target);
 
+    // if the user clicked on an item
     if (this.item) {
       this.mode = DRAG;
       if (! this.item.selected) {
         if (! this.holdingAppend(event)) {
-          this.items.clear();
+          this.items.deselectAll();
+        } else {
+          this.appending = true;
         }
         this.items.selectItem(this.item);
       }
@@ -108,13 +112,14 @@
   Mouse.prototype._up = function (event) {
 
     if (! this.down) { return; }
+    var append = this.holdingAppend(event);
     this.down = false;
 
     if (! this.moving) {
-      if (this.mode === SELECT) {
-        this.items.clear();
-      } else if (this.holdingAppend(event)) {
-        this.items.clearItem(this.item);
+      if (this.mode === SELECT && !append) {
+        this.items.deselectAll();
+      } else if (this.mode === DRAG && !this.appending && append) {
+        this.items.deselectItem(this.item);
       }
       return;
     }
