@@ -63,7 +63,7 @@
       this.clones.push(clone);
 
       // Hide current itemm
-      item.classList.add('hidden')
+      item.classList.add('hidden');
 
       // Make draggable
       document.body.appendChild(clone);

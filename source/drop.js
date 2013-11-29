@@ -15,7 +15,7 @@
     // Instance variables
     this.hover = false;
     this.active = false;
-    this.rect = new Rectangle()
+    this.rect = new Rectangle();
 
     this.move = this.move.bind(this);
     this.activate = this.activate.bind(this);
@@ -49,12 +49,12 @@
     }
   };
 
-  Drop.prototype.enter = function (event) {
+  Drop.prototype.enter = function () {
     this.hover = true;
     this.el.classList.add('droppable');
   };
 
-  Drop.prototype.leave = function (event) {
+  Drop.prototype.leave = function () {
     this.hover = false;
     this.el.classList.remove('droppable');
   };
