@@ -27,7 +27,8 @@
     });
     mouse.addDrop(document.querySelector('.drop-zone'));
     mouse.on('drop', function (element, zone) {
-      console.log(element);
+      var selectables = document.querySelector('.selectables');
+      selectables.removeChild(element);
     });
     mouse.init();
   </script>
