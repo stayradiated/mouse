@@ -31,6 +31,10 @@
     this._move = this._move.bind(this);
   };
 
+  Mouse.prototype.holdingAppend = function (event) {
+    return event.ctrlKey || event.metaKey;
+  }
+
   /**
    * Mouse down event listener
    * - event (Event) : the mousedown event
@@ -51,7 +55,9 @@
     if (this.item) {
       this.mode = DRAG;
       if (! this.item.selected) {
-        this.items.clear();
+        if (! this.holdingAppend(event)) {
+          this.items.clear();
+        }
         this.items.selectItem(this.item);
       }
       this.emit('prepare-drag', this.items.selected);
@@ -99,13 +105,17 @@
    * > void
    */
 
-  Mouse.prototype._up = function () {
+  Mouse.prototype._up = function (event) {
 
     if (! this.down) { return; }
     this.down = false;
 
     if (! this.moving) {
-      if (this.mode === SELECT) { this.items.clear(); }
+      if (this.mode === SELECT) {
+        this.items.clear();
+      } else if (this.holdingAppend(event)) {
+        this.items.clearItem(this.item);
+      }
       return;
     }
     this.moving = false;
