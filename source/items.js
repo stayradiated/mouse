@@ -5,7 +5,6 @@
 
   Rectangle = require('./rectangle');
 
-
   Items = function (options) {
     this.parent = options.parent;
     this.query = options.query;
@@ -47,11 +46,18 @@
   };
 
 
+  Items.prototype.selectItem = function (item) {
+    item.classList.add('selected');
+    item.selected = true;
+    this.selected.push(item);
+  };
+
   Items.prototype.clear = function () {
-    var i;
-    for (i = 0; i < this.elements.length; i++) {
-      this.clearItem(this.elements[i]);
+    var i, len = this.selected.length;
+    for (i = 0; i < len; i++) {
+      this.clearItem(this.selected[i]);
     }
+    this.selected = [];
   };
 
 
@@ -71,7 +77,6 @@
 
     }
 
-    return this;
   };
 
   Items.prototype.check = function (box) {
@@ -83,35 +88,33 @@
 
       if ((hit && !el.selected) || (!hit && el.selected)) {
         el.classList.add('selected');
-        el._selected = true;
+        el._temp_selected = true;
       } else {
         el.classList.remove('selected');
-        el._selected = false;
+        el._temp_selected = false;
       }
     }
-
-    return this;
   };
 
-  Items.prototype.select = function () {
-    var i, el;
+  Items.prototype.finishCheck = function () {
+    var i, el, len = this.elements.length;
 
     this.selected = [];
 
-    for (i = 0; i < this.elements.length; i++) {
+    for (i = 0; i < len; i++) {
       el = this.elements[i];
 
-      if (el._selected) {
-        el._selected = false;
+      if (el._temp_selected) {
+        el._temp_selected = false;
         el.selected = true;
         this.selected.push(el);
       } else {
         el.selected = false;
       }
     }
-
-    return this;
   };
+
+
 
   module.exports = Items;
 

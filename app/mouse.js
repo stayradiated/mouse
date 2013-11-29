@@ -130,7 +130,6 @@
       
         Rectangle = require('./rectangle');
       
-      
         Items = function (options) {
           this.parent = options.parent;
           this.query = options.query;
@@ -172,11 +171,18 @@
         };
       
       
+        Items.prototype.selectItem = function (item) {
+          item.classList.add('selected');
+          item.selected = true;
+          this.selected.push(item);
+        };
+      
         Items.prototype.clear = function () {
-          var i;
-          for (i = 0; i < this.elements.length; i++) {
-            this.clearItem(this.elements[i]);
+          var i, len = this.selected.length;
+          for (i = 0; i < len; i++) {
+            this.clearItem(this.selected[i]);
           }
+          this.selected = [];
         };
       
       
@@ -196,7 +202,6 @@
       
           }
       
-          return this;
         };
       
         Items.prototype.check = function (box) {
@@ -208,35 +213,33 @@
       
             if ((hit && !el.selected) || (!hit && el.selected)) {
               el.classList.add('selected');
-              el._selected = true;
+              el._temp_selected = true;
             } else {
               el.classList.remove('selected');
-              el._selected = false;
+              el._temp_selected = false;
             }
           }
-      
-          return this;
         };
       
-        Items.prototype.select = function () {
-          var i, el;
+        Items.prototype.finishCheck = function () {
+          var i, el, len = this.elements.length;
       
           this.selected = [];
       
-          for (i = 0; i < this.elements.length; i++) {
+          for (i = 0; i < len; i++) {
             el = this.elements[i];
       
-            if (el._selected) {
-              el._selected = false;
+            if (el._temp_selected) {
+              el._temp_selected = false;
               el.selected = true;
               this.selected.push(el);
             } else {
               el.selected = false;
             }
           }
-      
-          return this;
         };
+      
+      
       
         module.exports = Items;
       
@@ -405,7 +408,6 @@
           this._move = this._move.bind(this);
         };
       
-      
         /**
          * Mouse down event listener
          * - event (Event) : the mousedown event
@@ -425,9 +427,14 @@
       
           if (this.item) {
             this.mode = DRAG;
+            if (! this.item.selected) {
+              this.items.clear();
+              this.items.selectItem(this.item);
+            }
             this.emit('prepare-drag', this.items.selected);
           } else {
             this.mode = SELECT;
+            this.emit('prepare-select', event);
           }
       
         };
@@ -622,21 +629,38 @@
           this.items = options.items;
           this.box = null;
       
+          this.prepare = this.prepare.bind(this);
+          this.start = this.start.bind(this);
+          this.move = this.move.bind(this);
+          this.end = this.end.bind(this);
+      
           // Bind events
+          this.mouse.on('prepare-select', this.prepare);
           this.mouse.on('start-select', this.start);
           this.mouse.on('move-select', this.move);
           this.mouse.on('end-select', this.end);
       
         };
       
+        Select.prototype.holdingAppend = function (event) {
+          return event.ctrlKey || event.metaKey;
+        };
+      
+        Select.prototype.prepare = function (event) {
+          if (! this.holdingAppend(event)) {
+            this.items.clear();
+          }
+        };
+      
         Select.prototype.start = function (event) {
-          var append = event.ctrlKey || event.metaKey;
+          var append = this.holdingAppend(event);
           if (this.box) { this.box.remove(); }
       
           this.box = new Box();
           this.box.setStart(event);
       
-          this.items.reset(append).check(this.box.rect);
+          this.items.reset(append);
+          this.items.check(this.box.rect);
         };
       
         Select.prototype.move = function (event) {
@@ -648,7 +672,7 @@
         Select.prototype.end = function () {
           this.box.remove();
           this.box = null;
-          this.items.select();
+          this.items.finishCheck();
         };
       
         module.exports = Select;

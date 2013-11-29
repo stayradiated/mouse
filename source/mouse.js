@@ -31,7 +31,6 @@
     this._move = this._move.bind(this);
   };
 
-
   /**
    * Mouse down event listener
    * - event (Event) : the mousedown event
@@ -51,9 +50,14 @@
 
     if (this.item) {
       this.mode = DRAG;
+      if (! this.item.selected) {
+        this.items.clear();
+        this.items.selectItem(this.item);
+      }
       this.emit('prepare-drag', this.items.selected);
     } else {
       this.mode = SELECT;
+      this.emit('prepare-select', event);
     }
 
   };
