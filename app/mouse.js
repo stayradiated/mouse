@@ -166,8 +166,10 @@
       
       
         Items.prototype.clearItem = function (item) {
+          var index = this.selected.indexOf(item);
           item.classList.remove('selected');
           item.selected = false;
+          this.selected.splice(index, 1);
         };
       
       
@@ -178,9 +180,10 @@
         };
       
         Items.prototype.clear = function () {
-          var i, len = this.selected.length;
+          var i, item, len = this.selected.length;
           for (i = 0; i < len; i++) {
-            this.clearItem(this.selected[i]);
+            item.classList.remove('selected');
+            item.selected = false;
           }
           this.selected = [];
         };
