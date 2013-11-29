@@ -3,22 +3,23 @@
   'use strict';
 
 
-  var Drag, PLACEHOLDER;
+  var Drag;
 
-  PLACEHOLDER = document.createElement('div');
-  PLACEHOLDER.className = 'placeholder';
 
   Drag = function (options) {
 
     // Load options
     this.mouse = options.mouse;
+    this.createHelper = options.helper;
 
     // Set instance variables
-    this.parent = null;
     this.items = [];
-    this.clones = [];
-    this.placeholders = [];
-    this.offsets = [];
+    this.offsetY = options.offsetY || 0;
+    this.offsetX = options.offsetX || 0;
+
+    // Create placeholder
+    this.helper = document.createElement('div');
+    this.helper.className = 'drag-helper';
 
     // Bind events
     this.mouse.on('prepare-drag', this.setItems.bind(this));
@@ -36,73 +37,55 @@
 
   Drag.prototype.setItems = function (items) {
     this.items = items;
-    this.parent = items[0].parentElement;
+    this.helper.innerHTML = this.createHelper(this.items);
   };
 
+
+  /**
+   * Start dragging the items
+   * - event (Event) : the mouse event of when the user first started dragging
+   */
+
   Drag.prototype.start = function (event) {
-
-    var i, item, clone, placeholder, len = this.items.length;
-
+    // Hide all the items
+    var i, len = this.items.length;
     for (i = 0; i < len; i++) {
-
-      item = this.items[i];
-
-      // Save offset
-      this.offsets.push({
-        top: item.offsetTop - event.pageY,
-        left: item.offsetLeft - event.pageX
-      });
-
-      // Add placeholder
-      placeholder = PLACEHOLDER.cloneNode();
-      this.placeholders.push(placeholder);
-      this.parent.insertBefore(placeholder, item);
-
-      // Clone item
-      clone = item.cloneNode(true);
-      this.clones.push(clone);
-
-      // Hide current itemm
-      item.classList.add('hidden');
-
-      // Make draggable
-      document.body.appendChild(clone);
-      clone.classList.add('draggable');
+      this.items[i].classList.add('hidden');
     }
 
+    // Append the drag helper
+    document.body.appendChild(this.helper);
+
+    // Move the helper into position
     this.move(event);
   };
 
+
+  /**
+   * Move the helper to the mouse position
+   * - event (Event) : the mouse event of the user moving the mouse
+   */
+
   Drag.prototype.move = function (event) {
-    var i, item, offset, len = this.clones.length;
-    for (i = 0; i < len; i++) {
-      item = this.clones[i];
-      offset = this.offsets[i];
-      item.style.top  = offset.top  + window.pageYOffset + event.pageY + 'px';
-      item.style.left = offset.left + window.pageXOffset + event.pageX + 'px';
-    }
+    this.helper.style.top  = this.offsetY + window.pageYOffset + event.pageY + 'px';
+    this.helper.style.left = this.offsetX + window.pageXOffset + event.pageX + 'px';
   };
 
+
+  /**
+   * End the drag
+   * - event (Event) : the mouse event of the user ending the drag
+   */
+
   Drag.prototype.end = function () {
+    // Remove the helper
+    document.body.removeChild(this.helper);
 
+    // Remove the 'hidden' class from each of the items
     var i, len = this.items.length;
-
     for (i = 0; i < len; i++) {
-
-      // Remove placeholder
-      this.parent.removeChild(this.placeholders[i]);
-
-      // Remove clone
-      document.body.removeChild(this.clones[i]);
-
-      // Show original item
       this.items[i].classList.remove('hidden');
     }
-
-    this.clones = [];
-    this.placeholders = [];
-    this.offsets = [];
-
   };
 
 

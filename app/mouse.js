@@ -31,7 +31,7 @@
     [
       {
         /*
-          /home/stayrad/Projects/Mouse/source/api.js
+          /Volumes/Home/Projects/Mouse/source/api.js
         */
 
         './items': 1,
@@ -73,7 +73,10 @@
           });
       
           this.drag = new Drag({
-            mouse: this.mouse
+            mouse: this.mouse,
+            helper: options.helper,
+            offsetY: options.offsetY,
+            offsetX: options.offsetX
           });
       
           this.removeDrop = this.removeDrop.bind(this);
@@ -115,7 +118,7 @@
     ], [
       {
         /*
-          /home/stayrad/Projects/Mouse/source/items.js
+          /Volumes/Home/Projects/Mouse/source/items.js
         */
 
         './rectangle': 2
@@ -242,7 +245,7 @@
     ], [
       {
         /*
-          /home/stayrad/Projects/Mouse/source/rectangle.js
+          /Volumes/Home/Projects/Mouse/source/rectangle.js
         */
 
       }, function(require, module, exports) {
@@ -364,7 +367,7 @@
     ], [
       {
         /*
-          /home/stayrad/Projects/Mouse/source/mouse.js
+          /Volumes/Home/Projects/Mouse/source/mouse.js
         */
 
         'signals': 4
@@ -506,7 +509,7 @@
     ], [
       {
         /*
-          /home/stayrad/Projects/Mouse/node_modules/signals/index.js
+          /Volumes/Home/Projects/Mouse/node_modules/signals/index.js
         */
 
       }, function(require, module, exports) {
@@ -599,7 +602,7 @@
     ], [
       {
         /*
-          /home/stayrad/Projects/Mouse/source/select.js
+          /Volumes/Home/Projects/Mouse/source/select.js
         */
 
         './box': 6
@@ -656,7 +659,7 @@
     ], [
       {
         /*
-          /home/stayrad/Projects/Mouse/source/box.js
+          /Volumes/Home/Projects/Mouse/source/box.js
         */
 
         './rectangle': 2
@@ -722,7 +725,7 @@
     ], [
       {
         /*
-          /home/stayrad/Projects/Mouse/source/drag.js
+          /Volumes/Home/Projects/Mouse/source/drag.js
         */
 
       }, function(require, module, exports) {
@@ -731,22 +734,23 @@
         'use strict';
       
       
-        var Drag, PLACEHOLDER;
+        var Drag;
       
-        PLACEHOLDER = document.createElement('div');
-        PLACEHOLDER.className = 'placeholder';
       
         Drag = function (options) {
       
           // Load options
           this.mouse = options.mouse;
+          this.createHelper = options.helper;
       
           // Set instance variables
-          this.parent = null;
           this.items = [];
-          this.clones = [];
-          this.placeholders = [];
-          this.offsets = [];
+          this.offsetY = options.offsetY || 0;
+          this.offsetX = options.offsetX || 0;
+      
+          // Create placeholder
+          this.helper = document.createElement('div');
+          this.helper.className = 'drag-helper';
       
           // Bind events
           this.mouse.on('prepare-drag', this.setItems.bind(this));
@@ -764,73 +768,55 @@
       
         Drag.prototype.setItems = function (items) {
           this.items = items;
-          this.parent = items[0].parentElement;
+          this.helper.innerHTML = this.createHelper(this.items);
         };
       
+      
+        /**
+         * Start dragging the items
+         * - event (Event) : the mouse event of when the user first started dragging
+         */
+      
         Drag.prototype.start = function (event) {
-      
-          var i, item, clone, placeholder, len = this.items.length;
-      
+          // Hide all the items
+          var i, len = this.items.length;
           for (i = 0; i < len; i++) {
-      
-            item = this.items[i];
-      
-            // Save offset
-            this.offsets.push({
-              top: item.offsetTop - event.pageY,
-              left: item.offsetLeft - event.pageX
-            });
-      
-            // Add placeholder
-            placeholder = PLACEHOLDER.cloneNode();
-            this.placeholders.push(placeholder);
-            this.parent.insertBefore(placeholder, item);
-      
-            // Clone item
-            clone = item.cloneNode(true);
-            this.clones.push(clone);
-      
-            // Hide current itemm
-            item.classList.add('hidden')
-      
-            // Make draggable
-            document.body.appendChild(clone);
-            clone.classList.add('draggable');
+            this.items[i].classList.add('hidden');
           }
       
+          // Append the drag helper
+          document.body.appendChild(this.helper);
+      
+          // Move the helper into position
           this.move(event);
         };
       
+      
+        /**
+         * Move the helper to the mouse position
+         * - event (Event) : the mouse event of the user moving the mouse
+         */
+      
         Drag.prototype.move = function (event) {
-          var i, item, offset, len = this.clones.length;
-          for (i = 0; i < len; i++) {
-            item = this.clones[i];
-            offset = this.offsets[i];
-            item.style.top  = offset.top  + window.pageYOffset + event.pageY + 'px';
-            item.style.left = offset.left + window.pageXOffset + event.pageX + 'px';
-          }
+          this.helper.style.top  = this.offsetY + window.pageYOffset + event.pageY + 'px';
+          this.helper.style.left = this.offsetX + window.pageXOffset + event.pageX + 'px';
         };
       
+      
+        /**
+         * End the drag
+         * - event (Event) : the mouse event of the user ending the drag
+         */
+      
         Drag.prototype.end = function () {
+          // Remove the helper
+          document.body.removeChild(this.helper);
       
+          // Remove the 'hidden' class from each of the items
           var i, len = this.items.length;
-      
           for (i = 0; i < len; i++) {
-      
-            // Remove placeholder
-            this.parent.removeChild(this.placeholders[i]);
-      
-            // Remove clone
-            document.body.removeChild(this.clones[i]);
-      
-            // Show original item
             this.items[i].classList.remove('hidden');
           }
-      
-          this.clones = [];
-          this.placeholders = [];
-          this.offsets = [];
-      
         };
       
       
@@ -842,7 +828,7 @@
     ], [
       {
         /*
-          /home/stayrad/Projects/Mouse/source/drop.js
+          /Volumes/Home/Projects/Mouse/source/drop.js
         */
 
         './rectangle': 2
@@ -864,7 +850,7 @@
           // Instance variables
           this.hover = false;
           this.active = false;
-          this.rect = new Rectangle()
+          this.rect = new Rectangle();
       
           this.move = this.move.bind(this);
           this.activate = this.activate.bind(this);
@@ -898,12 +884,12 @@
           }
         };
       
-        Drop.prototype.enter = function (event) {
+        Drop.prototype.enter = function () {
           this.hover = true;
           this.el.classList.add('droppable');
         };
       
-        Drop.prototype.leave = function (event) {
+        Drop.prototype.leave = function () {
           this.hover = false;
           this.el.classList.remove('droppable');
         };

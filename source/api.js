@@ -31,7 +31,10 @@
     });
 
     this.drag = new Drag({
-      mouse: this.mouse
+      mouse: this.mouse,
+      helper: options.helper,
+      offsetY: options.offsetY,
+      offsetX: options.offsetX
     });
 
     this.removeDrop = this.removeDrop.bind(this);

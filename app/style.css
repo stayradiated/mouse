@@ -32,7 +32,7 @@ body {
   overflow: auto;
 }
 
-.item, .placeholder {
+.item {
   display: inline-block;
   text-align: center;
   vertical-align: top;
@@ -51,18 +51,19 @@ body {
 }
 
 .item.hidden {
-  display: none;
+  opacity: 0.3;
 }
 
-.item.draggable {
+.drag-helper {
+  background: #08c;
+  border: 5px solid #08c;
+  background: #004568;
   position: absolute;
-  margin: 0;
-  z-index: 20;
-}
-
-.selectables .placeholder {
-  background: #555;
-  border-color: #333;
+  height: 30px;
+  min-width: 200px;
+  line-height: 30px;
+  color: #fff;
+  text-align: center;
 }
 
 .drop-zone {

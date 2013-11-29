@@ -7,23 +7,31 @@
  </head>
  <body>
   <div class="selectables">
-    <div class="item">1</div>
-    <div class="item">2</div>
-    <div class="item">3</div>
-    <div class="item">4</div>
-    <div class="item">5</div>
-    <div class="item">6</div>
-    <div class="item">7</div>
-    <div class="item">8</div>
-    <div class="item">9</div>
-    <div class="item">10</div>
+    <div class="item">One</div>
+    <div class="item">Two</div>
+    <div class="item">Three</div>
+    <div class="item">Four</div>
+    <div class="item">Five</div>
+    <div class="item">Six</div>
+    <div class="item">Seven</div>
+    <div class="item">Eight</div>
+    <div class="item">Nine</div>
+    <div class="item">Ten</div>
   </div>
   <div class="drop-zone"></div>
   <script src="mouse.js"></script>
   <script>
     var mouse = new Mouse({
         parent: document.body,
-        query: '.selectables div'
+        query: '.selectables div',
+        helper: function (elements) {
+          if (elements.length === 1) {
+            return elements[0].innerText;
+          }
+          return 'Moving ' + elements.length + ' items';
+        },
+        offsetY: -15,
+        offsetX: -5
     });
     mouse.addDrop(document.querySelector('.drop-zone'));
     mouse.on('drop', function (elements, zone) {
