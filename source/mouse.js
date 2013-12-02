@@ -43,6 +43,8 @@
 
   Mouse.prototype._down = function (event) {
 
+    var selected;
+
     if (event.which !== 1) {
       return;
     }
@@ -56,15 +58,12 @@
     // if the user clicked on an item
     if (this.item) {
       this.mode = DRAG;
-      if (! this.item.selected) {
-        if (! this.holdingAppend(event)) {
-          this.items.deselectAll();
-        } else {
-          this.appending = true;
-        }
+      if (! this.item.selected && this.holdingAppend(event)) {
+        this.appending = true;
         this.items.selectItem(this.item);
       }
-      this.emit('prepare-drag', this.items.selected);
+      selected = this.items.selected.length > 0 ? this.items.selected : [this.item];
+      this.emit('prepare-drag', selected);
     } else {
       this.mode = SELECT;
       this.emit('prepare-select', event);
