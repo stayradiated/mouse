@@ -9,7 +9,7 @@
   Select = function (options) {
 
     // Set instance variables
-    this.mouse = options.mouse;
+    this.vent = options.vent;
     this.items = options.items;
     this.box = null;
 
@@ -19,10 +19,10 @@
     this.end = this.end.bind(this);
 
     // Bind events
-    this.mouse.on('prepare-select', this.prepare);
-    this.mouse.on('start-select', this.start);
-    this.mouse.on('move-select', this.move);
-    this.mouse.on('end-select', this.end);
+    this.vent.on('prepare-select', this.prepare);
+    this.vent.on('start-select', this.start);
+    this.vent.on('move-select', this.move);
+    this.vent.on('end-select', this.end);
 
   };
 

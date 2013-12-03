@@ -2,8 +2,9 @@
 
   'use strict';
 
-  var Api, Items, Mouse, Select, Drag, Drop;
+  var Api, Signals, Items, Mouse, Select, Drag, Drop;
 
+  Signals = require('signals');
   Items = require('./items');
   Mouse = require('./mouse');
   Select = require('./select');
@@ -11,44 +12,49 @@
   Drop = require('./drop');
 
   Api = function (options) {
-
+    this.vent = new Signals();
     this.drops = [];
+    this.options = options;
     this.parent = options.parent;
+    this.removeDrop = this.removeDrop.bind(this);
+  };
+
+  Api.prototype.init = function () {
+
+    if (typeof this.parent === 'string') {
+      this.parent = document.querySelector(this.parent);
+    }
 
     this.items = new Items({
       parent: this.parent,
-      query: options.query
+      query: this.options.query
     });
 
     this.mouse = new Mouse({
       parent: this.parent,
-      items: this.items
+      items: this.items,
+      vent: this.vent
     });
 
     this.select = new Select({
-      mouse: this.mouse,
+      vent: this.vent,
       items: this.items
     });
 
     this.drag = new Drag({
-      mouse: this.mouse,
-      helper: options.helper,
-      offsetY: options.offsetY,
-      offsetX: options.offsetX
+      vent: this.vent,
+      helper: this.options.helper,
+      offsetY: this.options.offsetY,
+      offsetX: this.options.offsetX
     });
 
-    this.removeDrop = this.removeDrop.bind(this);
-    this.mouse.on('remove-drop', this.removeDrop);
-
-  };
-
-  Api.prototype.init = function () {
+    this.vent.on('remove-drop', this.removeDrop);
     this.mouse.init();
   };
 
   Api.prototype.addDrop = function (el) {
     var drop = new Drop({
-      mouse: this.mouse,
+      vent: this.vent,
       el: el
     });
     this.drops.push(drop);
@@ -61,7 +67,15 @@
   };
 
   Api.prototype.on = function () {
-    this.mouse.on.apply(this.mouse, arguments);
+    this.vent.on.apply(this.vent, arguments);
+  };
+
+  Api.prototype.once = function () {
+    this.vent.once.apply(this.vent, arguments);
+  };
+
+  Api.prototype.clearSelection = function () {
+    this.items.deselectAll();
   };
 
   if (typeof window !== 'undefined') {

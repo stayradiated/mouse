@@ -9,6 +9,7 @@
   Drop = function (options) {
 
     // Load options
+    this.vent = options.vent;
     this.mouse = options.mouse;
     this.el = options.el;
 
@@ -17,14 +18,20 @@
     this.active = false;
     this.rect = new Rectangle();
 
+    this.prepare = this.prepare.bind(this);
     this.move = this.move.bind(this);
     this.activate = this.activate.bind(this);
     this.deactivate = this.deactivate.bind(this);
 
     // Events
-    this.mouse.on('start-drag', this.activate);
-    this.mouse.on('end-drag', this.deactivate);
-    this.mouse.on('move-drag', this.move);
+    this.vent.on('prepare-drag', this.prepare);
+    this.vent.on('start-drag', this.activate);
+    this.vent.on('end-drag', this.deactivate);
+    this.vent.on('move-drag', this.move);
+  };
+
+  Drop.prototype.prepare = function (items) {
+    this.items = items;
   };
 
   Drop.prototype.activate = function () {
@@ -35,7 +42,7 @@
   Drop.prototype.deactivate = function () {
     this.active = false;
     if (this.hover) {
-      this.mouse.emit('drop', this.mouse.items.selected, this.el);
+      this.vent.emit('drop', this.items, this.el);
       this.leave();
     }
   };
@@ -60,10 +67,10 @@
   };
 
   Drop.prototype.remove = function () {
-    this.mouse.off('start-drag', this.activate);
-    this.mouse.off('end-drag', this.deactivate);
-    this.mouse.off('move-drag', this.move);
-    this.mouse.emit('remove-drop', this);
+    this.vent.off('start-drag', this.activate);
+    this.vent.off('end-drag', this.deactivate);
+    this.vent.off('move-drag', this.move);
+    this.vent.emit('remove-drop', this);
   };
 
   module.exports = Drop;

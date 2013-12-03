@@ -9,7 +9,7 @@
   Drag = function (options) {
 
     // Load options
-    this.mouse = options.mouse;
+    this.vent = options.vent;
     this.createHelper = options.helper;
 
     // Set instance variables
@@ -22,10 +22,10 @@
     this.helper.className = 'drag-helper';
 
     // Bind events
-    this.mouse.on('prepare-drag', this.setItems.bind(this));
-    this.mouse.on('start-drag', this.start.bind(this));
-    this.mouse.on('move-drag', this.move.bind(this));
-    this.mouse.on('end-drag', this.end.bind(this));
+    this.vent.on('prepare-drag', this.setItems.bind(this));
+    this.vent.on('start-drag', this.start.bind(this));
+    this.vent.on('move-drag', this.move.bind(this));
+    this.vent.on('end-drag', this.end.bind(this));
 
   };
 

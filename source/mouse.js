@@ -2,9 +2,7 @@
 
   'use strict';
 
-  var smoke, Mouse, DEFAULT, SELECT, DRAG;
-
-  smoke = require('signals');
+  var Mouse, DEFAULT, SELECT, DRAG;
 
   // Modes
   DEFAULT = 0;
@@ -12,9 +10,7 @@
   DRAG = 2;
 
   Mouse = function (options) {
-
-    smoke.convert(this);
-
+    this.vent = options.vent;
     this.parent = options.parent;
     this.items = options.items;
 
@@ -29,6 +25,11 @@
     this._up = this._up.bind(this);
     this._down = this._down.bind(this);
     this._move = this._move.bind(this);
+  };
+
+
+  Mouse.prototype.selected = function () {
+    return this.items.selected.length > 0 ? this.items.selected : [this.item];
   };
 
   Mouse.prototype.holdingAppend = function (event) {
@@ -58,15 +59,18 @@
     // if the user clicked on an item
     if (this.item) {
       this.mode = DRAG;
-      if (! this.item.selected && this.holdingAppend(event)) {
-        this.appending = true;
-        this.items.selectItem(this.item);
+      if (! this.item.selected) {
+        if (this.holdingAppend(event)) {
+          this.appending = true;
+          this.items.selectItem(this.item);
+        } else {
+          this.items.deselectAll();
+        }
       }
-      selected = this.items.selected.length > 0 ? this.items.selected : [this.item];
-      this.emit('prepare-drag', selected);
+      this.vent.emit('prepare-drag', this.selected());
     } else {
       this.mode = SELECT;
-      this.emit('prepare-select', event);
+      this.vent.emit('prepare-select', event);
     }
 
   };
@@ -84,9 +88,9 @@
 
     if (this.moving) {
       if (this.mode === DRAG) {
-        this.emit('move-drag', event);
+        this.vent.emit('move-drag', event);
       } else {
-        this.emit('move-select', event);
+        this.vent.emit('move-select', event);
       }
     } else if (
       Math.abs(event.x - this.start.x) > this.min ||
@@ -94,9 +98,9 @@
     ) {
       this.moving = true;
       if (this.mode === DRAG) {
-        this.emit('start-drag', this.start);
+        this.vent.emit('start-drag', this.start);
       } else {
-        this.emit('start-select', this.start);
+        this.vent.emit('start-select', this.start);
       }
     }
   };
@@ -126,9 +130,9 @@
     this.moving = false;
 
     if (this.mode === DRAG) {
-      this.emit('end-drag');
+      this.vent.emit('end-drag');
     } else if (this.mode === SELECT) {
-      this.emit('end-select');
+      this.vent.emit('end-select');
     }
 
     this.mode = DEFAULT;

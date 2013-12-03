@@ -34,8 +34,9 @@
           /Volumes/Home/Projects/Mouse/source/api.js
         */
 
-        './items': 1,
-        './mouse': 3,
+        'signals': 1,
+        './items': 2,
+        './mouse': 4,
         './select': 5,
         './drag': 7,
         './drop': 8
@@ -44,8 +45,9 @@
       
         'use strict';
       
-        var Api, Items, Mouse, Select, Drag, Drop;
+        var Api, Signals, Items, Mouse, Select, Drag, Drop;
       
+        Signals = require('signals');
         Items = require('./items');
         Mouse = require('./mouse');
         Select = require('./select');
@@ -53,44 +55,49 @@
         Drop = require('./drop');
       
         Api = function (options) {
-      
+          this.vent = new Signals();
           this.drops = [];
+          this.options = options;
           this.parent = options.parent;
+          this.removeDrop = this.removeDrop.bind(this);
+        };
+      
+        Api.prototype.init = function () {
+      
+          if (typeof this.parent === 'string') {
+            this.parent = document.querySelector(this.parent);
+          }
       
           this.items = new Items({
             parent: this.parent,
-            query: options.query
+            query: this.options.query
           });
       
           this.mouse = new Mouse({
             parent: this.parent,
-            items: this.items
+            items: this.items,
+            vent: this.vent
           });
       
           this.select = new Select({
-            mouse: this.mouse,
+            vent: this.vent,
             items: this.items
           });
       
           this.drag = new Drag({
-            mouse: this.mouse,
-            helper: options.helper,
-            offsetY: options.offsetY,
-            offsetX: options.offsetX
+            vent: this.vent,
+            helper: this.options.helper,
+            offsetY: this.options.offsetY,
+            offsetX: this.options.offsetX
           });
       
-          this.removeDrop = this.removeDrop.bind(this);
-          this.mouse.on('remove-drop', this.removeDrop);
-      
-        };
-      
-        Api.prototype.init = function () {
+          this.vent.on('remove-drop', this.removeDrop);
           this.mouse.init();
         };
       
         Api.prototype.addDrop = function (el) {
           var drop = new Drop({
-            mouse: this.mouse,
+            vent: this.vent,
             el: el
           });
           this.drops.push(drop);
@@ -103,7 +110,15 @@
         };
       
         Api.prototype.on = function () {
-          this.mouse.on.apply(this.mouse, arguments);
+          this.vent.on.apply(this.vent, arguments);
+        };
+      
+        Api.prototype.once = function () {
+          this.vent.once.apply(this.vent, arguments);
+        };
+      
+        Api.prototype.clearSelection = function () {
+          this.items.deselectAll();
         };
       
         if (typeof window !== 'undefined') {
@@ -118,10 +133,76 @@
     ], [
       {
         /*
+          /Volumes/Home/Projects/Mouse/node_modules/signals/index.js
+        */
+
+      }, function(require, module, exports) {
+        
+      var Signals = function () {
+        this.handlers = {};
+      };
+      
+      // add a listener
+      Signals.prototype.on = function(eventName, handler) {
+        if (! this.handlers.hasOwnProperty(eventName)) {
+          this.handlers[eventName] = [];
+        }
+        this.handlers[eventName].push(handler);
+        return this;
+      };
+      
+      // add a listener that will only be called once
+      Signals.prototype.once = function(eventName, handler) {
+        var wrappedHandler = function () {
+          handler.apply(obj.off(eventName, wrappedHandler), arguments);
+        };
+      
+        // in order to allow that these wrapped handlers can be removed by
+        // removing the original function, we save a reference to the original
+        // function
+        wrappedHandler.h = handler;
+      
+        return this.on(eventName, wrappedHandler);
+      };
+      
+      // remove a listener
+      Signals.prototype.off = function(eventName, handler) {
+        var i, list, len;
+        list = handlers[eventName];
+      
+        for(i = list.length - 1; i >= 0; i--) {
+          if (list[i] === handler || list[i].h === handler) {
+            list.splice(i, 1);
+          }
+        }
+      
+        if (list.length === 0 || ! handler) {
+          delete handlers[eventName];
+        }
+      
+        return this;
+      };
+      
+      Signals.prototype.emit = function(eventName) {
+        var i, list, len;
+        list = this.handlers[eventName];
+        len = list.length;
+        for(i = 0; i < len; i++) {
+            list[i].apply(this, list.slice.call(arguments, 1));
+        }
+        return this;
+      };
+      
+      module.exports = Signals;
+      ;
+      }
+    ], [
+      {
+        /*
           /Volumes/Home/Projects/Mouse/source/items.js
         */
 
-        './rectangle': 2
+        './rectangle': 3
       }, function(require, module, exports) {
         (function () {
         'use strict';
@@ -398,15 +479,12 @@
           /Volumes/Home/Projects/Mouse/source/mouse.js
         */
 
-        'signals': 4
       }, function(require, module, exports) {
         (function () {
       
         'use strict';
       
-        var smoke, Mouse, DEFAULT, SELECT, DRAG;
-      
-        smoke = require('signals');
+        var Mouse, DEFAULT, SELECT, DRAG;
       
         // Modes
         DEFAULT = 0;
@@ -414,9 +492,7 @@
         DRAG = 2;
       
         Mouse = function (options) {
-      
-          smoke.convert(this);
-      
+          this.vent = options.vent;
           this.parent = options.parent;
           this.items = options.items;
       
@@ -433,6 +509,11 @@
           this._move = this._move.bind(this);
         };
       
+      
+        Mouse.prototype.selected = function () {
+          return this.items.selected.length > 0 ? this.items.selected : [this.item];
+        };
+      
         Mouse.prototype.holdingAppend = function (event) {
           return event.ctrlKey || event.metaKey;
         }
@@ -444,6 +525,8 @@
          */
       
         Mouse.prototype._down = function (event) {
+      
+          var selected;
       
           if (event.which !== 1) {
             return;
@@ -459,17 +542,17 @@
           if (this.item) {
             this.mode = DRAG;
             if (! this.item.selected) {
-              if (! this.holdingAppend(event)) {
-                this.items.deselectAll();
-              } else {
+              if (this.holdingAppend(event)) {
                 this.appending = true;
+                this.items.selectItem(this.item);
+              } else {
+                this.items.deselectAll();
               }
-              this.items.selectItem(this.item);
             }
-            this.emit('prepare-drag', this.items.selected);
+            this.vent.emit('prepare-drag', this.selected());
           } else {
             this.mode = SELECT;
-            this.emit('prepare-select', event);
+            this.vent.emit('prepare-select', event);
           }
       
         };
@@ -487,9 +570,9 @@
       
           if (this.moving) {
             if (this.mode === DRAG) {
-              this.emit('move-drag', event);
+              this.vent.emit('move-drag', event);
             } else {
-              this.emit('move-select', event);
+              this.vent.emit('move-select', event);
             }
           } else if (
             Math.abs(event.x - this.start.x) > this.min ||
@@ -497,9 +580,9 @@
           ) {
             this.moving = true;
             if (this.mode === DRAG) {
-              this.emit('start-drag', this.start);
+              this.vent.emit('start-drag', this.start);
             } else {
-              this.emit('start-select', this.start);
+              this.vent.emit('start-select', this.start);
             }
           }
         };
@@ -514,6 +597,7 @@
         Mouse.prototype._up = function (event) {
       
           if (! this.down) { return; }
+      
           var append = this.holdingAppend(event);
           this.down = false;
       
@@ -528,9 +612,9 @@
           this.moving = false;
       
           if (this.mode === DRAG) {
-            this.emit('end-drag');
+            this.vent.emit('end-drag');
           } else if (this.mode === SELECT) {
-            this.emit('end-select');
+            this.vent.emit('end-select');
           }
       
           this.mode = DEFAULT;
@@ -556,99 +640,6 @@
     ], [
       {
         /*
-          /Volumes/Home/Projects/Mouse/node_modules/signals/index.js
-        */
-
-      }, function(require, module, exports) {
-        // in a few cases we've chosen optimizing script length over efficiency of code.
-      // I think that is the right choice for this library.  If you're adding and
-      // triggering A LOT of events, you might want to use a different library.
-      var smokesignals = {
-          convert: function(obj, handlers) {
-              // we store the list of handlers as a local variable inside the scope
-              // so that we don't have to add random properties to the object we are
-              // converting. (prefixing variables in the object with an underscore or
-              // two is an ugly solution)
-              //      we declare the variable in the function definition to use two less
-              //      characters (as opposed to using 'var ').  I consider this an inelegant
-              //      solution since smokesignals.convert.length now returns 2 when it is
-              //      really 1, but doing this doesn't otherwise change the functionallity of
-              //      this module, so we'll go with it for now
-              handlers = {};
-      
-              // add a listener
-              obj.on = function(eventName, handler) {
-                  // either use the existing array or create a new one for this event
-                  //      this isn't the most efficient way to do this, but is the shorter
-                  //      than other more efficient ways, so we'll go with it for now.
-                  (handlers[eventName] = handlers[eventName] || [])
-                      // add the handler to the array
-                      .push(handler);
-      
-                  return obj;
-              };
-      
-              // add a listener that will only be called once
-              obj.once = function(eventName, handler) {
-                  // create a wrapper listener, that will remove itself after it is called
-                  function wrappedHandler() {
-                      // remove ourself, and then call the real handler with the args
-                      // passed to this wrapper
-                      handler.apply(obj.off(eventName, wrappedHandler), arguments);
-                  }
-                  // in order to allow that these wrapped handlers can be removed by
-                  // removing the original function, we save a reference to the original
-                  // function
-                  wrappedHandler.h = handler;
-      
-                  // call the regular add listener function with our new wrapper
-                  return obj.on(eventName, wrappedHandler);
-              };
-      
-              // remove a listener
-              obj.off = function(eventName, handler) {
-                  // loop through all handlers for this eventName, assuming a handler
-                  // was passed in, to see if the handler passed in was any of them so
-                  // we can remove it
-                  //      it would be more efficient to stash the length and compare i
-                  //      to that, but that is longer so we'll go with this.
-                  for (var list = handlers[eventName], i = 0; handler && list && list[i]; i++) {
-                      // either this item is the handler passed in, or this item is a
-                      // wrapper for the handler passed in.  See the 'once' function
-                      list[i] != handler && list[i].h != handler ||
-                          // remove it!
-                          list.splice(i--,1);
-                  }
-                  // if i is 0 (i.e. falsy), then there are no items in the array for this
-                  // event name (or the array doesn't exist)
-                  if (!i) {
-                      // remove the array for this eventname (if it doesn't exist then
-                      // this isn't really hurting anything)
-                      delete handlers[eventName];
-                  }
-                  return obj;
-              };
-      
-              obj.emit = function(eventName) {
-                  // loop through all handlers for this event name and call them all
-                  //      it would be more efficient to stash the length and compare i
-                  //      to that, but that is longer so we'll go with this.
-                  for(var list = handlers[eventName], i = 0; list && list[i];) {
-                      list[i++].apply(obj, list.slice.call(arguments, 1));
-                  }
-                  return obj;
-              };
-      
-              return obj;
-          }
-      };
-      
-      module.exports = smokesignals;
-      ;
-      }
-    ], [
-      {
-        /*
           /Volumes/Home/Projects/Mouse/source/select.js
         */
 
@@ -665,7 +656,7 @@
         Select = function (options) {
       
           // Set instance variables
-          this.mouse = options.mouse;
+          this.vent = options.vent;
           this.items = options.items;
           this.box = null;
       
@@ -675,10 +666,10 @@
           this.end = this.end.bind(this);
       
           // Bind events
-          this.mouse.on('prepare-select', this.prepare);
-          this.mouse.on('start-select', this.start);
-          this.mouse.on('move-select', this.move);
-          this.mouse.on('end-select', this.end);
+          this.vent.on('prepare-select', this.prepare);
+          this.vent.on('start-select', this.start);
+          this.vent.on('move-select', this.move);
+          this.vent.on('end-select', this.end);
       
         };
       
@@ -730,7 +721,7 @@
           /Volumes/Home/Projects/Mouse/source/box.js
         */
 
-        './rectangle': 2
+        './rectangle': 3
       }, function(require, module, exports) {
         (function () {
       
@@ -808,7 +799,7 @@
         Drag = function (options) {
       
           // Load options
-          this.mouse = options.mouse;
+          this.vent = options.vent;
           this.createHelper = options.helper;
       
           // Set instance variables
@@ -821,10 +812,10 @@
           this.helper.className = 'drag-helper';
       
           // Bind events
-          this.mouse.on('prepare-drag', this.setItems.bind(this));
-          this.mouse.on('start-drag', this.start.bind(this));
-          this.mouse.on('move-drag', this.move.bind(this));
-          this.mouse.on('end-drag', this.end.bind(this));
+          this.vent.on('prepare-drag', this.setItems.bind(this));
+          this.vent.on('start-drag', this.start.bind(this));
+          this.vent.on('move-drag', this.move.bind(this));
+          this.vent.on('end-drag', this.end.bind(this));
       
         };
       
@@ -836,7 +827,6 @@
       
         Drag.prototype.setItems = function (items) {
           this.items = items;
-          this.helper.innerHTML = this.createHelper(this.items);
         };
       
       
@@ -853,6 +843,7 @@
           }
       
           // Append the drag helper
+          this.helper.innerHTML = this.createHelper(this.items);
           document.body.appendChild(this.helper);
       
           // Move the helper into position
@@ -899,7 +890,7 @@
           /Volumes/Home/Projects/Mouse/source/drop.js
         */
 
-        './rectangle': 2
+        './rectangle': 3
       }, function(require, module, exports) {
         (function () {
       
@@ -912,6 +903,7 @@
         Drop = function (options) {
       
           // Load options
+          this.vent = options.vent;
           this.mouse = options.mouse;
           this.el = options.el;
       
@@ -920,14 +912,20 @@
           this.active = false;
           this.rect = new Rectangle();
       
+          this.prepare = this.prepare.bind(this);
           this.move = this.move.bind(this);
           this.activate = this.activate.bind(this);
           this.deactivate = this.deactivate.bind(this);
       
           // Events
-          this.mouse.on('start-drag', this.activate);
-          this.mouse.on('end-drag', this.deactivate);
-          this.mouse.on('move-drag', this.move);
+          this.vent.on('prepare-drag', this.prepare);
+          this.vent.on('start-drag', this.activate);
+          this.vent.on('end-drag', this.deactivate);
+          this.vent.on('move-drag', this.move);
+        };
+      
+        Drop.prototype.prepare = function (items) {
+          this.items = items;
         };
       
         Drop.prototype.activate = function () {
@@ -938,7 +936,7 @@
         Drop.prototype.deactivate = function () {
           this.active = false;
           if (this.hover) {
-            this.mouse.emit('drop', this.mouse.items.selected, this.el);
+            this.vent.emit('drop', this.items, this.el);
             this.leave();
           }
         };
@@ -963,15 +961,16 @@
         };
       
         Drop.prototype.remove = function () {
-          this.mouse.off('start-drag', this.activate);
-          this.mouse.off('end-drag', this.deactivate);
-          this.mouse.off('move-drag', this.move);
-          this.mouse.emit('remove-drop', this);
+          this.vent.off('start-drag', this.activate);
+          this.vent.off('end-drag', this.deactivate);
+          this.vent.off('move-drag', this.move);
+          this.vent.emit('remove-drop', this);
         };
       
         module.exports = Drop;
       
-      }());;
+      }());
+      ;
       }
     ]
   ]);
