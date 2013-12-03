@@ -546,7 +546,7 @@
       
         Mouse.prototype.holdingAppend = function (event) {
           return event.ctrlKey || event.metaKey;
-        }
+        };
       
         /**
          * Mouse down event listener
@@ -556,17 +556,30 @@
       
         Mouse.prototype._down = function (event) {
       
-          var selected;
+          // Ignore middle clicks
+          if (event.which === 2) {
+            return;
+          }
       
-          if (event.which !== 1) {
+          var rightClick = (event.which === 3);
+          
+          // Update items and check if it was an item that was clicked on
+          this.items.fetch();
+          this.item = this.items.find(event.target);
+      
+          // Handle right click
+          if (this.item && rightClick) {
+            if (! this.item.selected) {
+              this.items.deselectAll();
+              this.items.selectItem(this.item);
+            }
+            this.vent.emit('right-click', event, this.selected());
             return;
           }
       
           this.appending = false;
           this.down = true;
           this.start = event;
-          this.items.fetch();
-          this.item = this.items.find(event.target);
       
           // if the user clicked on an item
           if (this.item) {
@@ -887,8 +900,12 @@
          */
       
         Drag.prototype.move = function (event) {
-          this.helper.style.top  = this.offsetY + window.pageYOffset + event.pageY + 'px';
-          this.helper.style.left = this.offsetX + window.pageXOffset + event.pageX + 'px';
+      
+          this.helper.style.top  =
+            this.offsetY + window.pageYOffset + event.pageY + 'px';
+      
+          this.helper.style.left =
+            this.offsetX + window.pageXOffset + event.pageX + 'px';
         };
       
       

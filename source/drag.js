@@ -67,8 +67,12 @@
    */
 
   Drag.prototype.move = function (event) {
-    this.helper.style.top  = this.offsetY + window.pageYOffset + event.pageY + 'px';
-    this.helper.style.left = this.offsetX + window.pageXOffset + event.pageX + 'px';
+
+    this.helper.style.top  =
+      this.offsetY + window.pageYOffset + event.pageY + 'px';
+
+    this.helper.style.left =
+      this.offsetX + window.pageXOffset + event.pageX + 'px';
   };
 
 

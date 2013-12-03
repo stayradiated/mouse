@@ -40,6 +40,9 @@
         selectables.removeChild(elements[i]);
       }
     });
+    mouse.on('right-click', function (event, elements) {
+      console.log(event, elements);
+    });
     mouse.init();
   </script>
  </body>
