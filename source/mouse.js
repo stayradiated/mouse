@@ -111,6 +111,7 @@
   Mouse.prototype._up = function (event) {
 
     if (! this.down) { return; }
+
     var append = this.holdingAppend(event);
     this.down = false;
 

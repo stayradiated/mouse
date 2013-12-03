@@ -37,7 +37,6 @@
 
   Drag.prototype.setItems = function (items) {
     this.items = items;
-    this.helper.innerHTML = this.createHelper(this.items);
   };
 
 
@@ -54,6 +53,7 @@
     }
 
     // Append the drag helper
+    this.helper.innerHTML = this.createHelper(this.items);
     document.body.appendChild(this.helper);
 
     // Move the helper into position
