@@ -58,10 +58,9 @@
       
         Api = function (options) {
           this.vent = new Signals();
-          this.drops = [];
+          this.menus = [];
           this.options = options;
           this.parent = options.parent;
-          this.removeDrop = this.removeDrop.bind(this);
         };
       
         Api.prototype.init = function () {
@@ -93,6 +92,10 @@
             offsetX: this.options.offsetX
           });
       
+          for (var i = 0; i < this.menus.length; i++) {
+            this.menus[i].init(this.items);
+          }
+      
           this.vent.on('remove-drop', this.removeDrop);
           this.mouse.init();
         };
@@ -102,19 +105,15 @@
             vent: this.vent,
             el: el
           });
-          this.drops.push(drop);
           return drop;
         };
       
-        Api.prototype.removeDrop = function (drop) {
-          var index = this.drops.indexOf(drop);
-          this.drops.splice(index, 1);
-        };
-      
         Api.prototype.addMenu = function (items, options) {
+      
           if (!options) {
             options = {};
           }
+      
           options.vent = this.vent;
       
           var menu = new Menu(items, options);
@@ -123,7 +122,8 @@
             menu.show(event);
           });
       
-          menu.init();
+          this.menus.push(menu);
+      
           return menu;
         };
       
@@ -580,7 +580,7 @@
           }
       
           var rightClick = (event.which === 3);
-          
+      
           // Update items and check if it was an item that was clicked on
           this.items.fetch();
           this.item = this.items.find(event.target);
@@ -1071,7 +1071,9 @@
           this.render = this.render.bind(this);
           this.init = this.init.bind(this);
       
+          // Options
           this.duration = options.fadeOut || 0;
+      
           this.vent = options.vent;
           this.id = createId();
           this.contents = [];
@@ -1093,33 +1095,32 @@
       
           }
       
-          this.render();
         };
       
-        Menu.prototype.init = function (parent) {
+        Menu.prototype.init = function (items) {
           var self = this;
-          parent = parent || document;
-          console.log();
       
-          parent.addEventListener('contextmenu', function (e) {
-            e.preventDefault();
+          this.render();
+      
+          this.items = items;
+      
+          this.el.addEventListener('mousedown', function (event) {
+            event.stopPropagation();
+            self.select(event);
+          });
+      
+          document.addEventListener('contextmenu', function (event) {
+            event.preventDefault();
           });
       
           document.addEventListener('mousedown', function (event) {
-            var target;
             if (!(self.active && event.which === 1)) {
               return;
             }
-            target = event.target;
-            while (target !== null && target !== parent) {
-              if (target === self.el) {
-                self.select(event);
-                return;
-              }
-              target = target.parentElement;
-            }
-            return self.hide();
+            self.hide();
           });
+      
+      
       
         };
       
@@ -1155,11 +1156,13 @@
         Menu.prototype.select = function (event) {
           var id, target;
       
+          event.stopPropagation();
+      
           target = event.target;
           id = target.dataset.id;
       
           if (id !== null) {
-            this.vent.emit('menu-item', id);
+            this.vent.emit('menu-item', id, this.items.selected);
           }
       
           return this.hide();

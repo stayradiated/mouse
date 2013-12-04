@@ -50,7 +50,7 @@
     }
 
     var rightClick = (event.which === 3);
-    
+
     // Update items and check if it was an item that was clicked on
     this.items.fetch();
     this.item = this.items.find(event.target);

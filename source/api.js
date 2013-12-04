@@ -14,10 +14,9 @@
 
   Api = function (options) {
     this.vent = new Signals();
-    this.drops = [];
+    this.menus = [];
     this.options = options;
     this.parent = options.parent;
-    this.removeDrop = this.removeDrop.bind(this);
   };
 
   Api.prototype.init = function () {
@@ -49,6 +48,10 @@
       offsetX: this.options.offsetX
     });
 
+    for (var i = 0; i < this.menus.length; i++) {
+      this.menus[i].init(this.items);
+    }
+
     this.vent.on('remove-drop', this.removeDrop);
     this.mouse.init();
   };
@@ -58,19 +61,15 @@
       vent: this.vent,
       el: el
     });
-    this.drops.push(drop);
     return drop;
   };
 
-  Api.prototype.removeDrop = function (drop) {
-    var index = this.drops.indexOf(drop);
-    this.drops.splice(index, 1);
-  };
-
   Api.prototype.addMenu = function (items, options) {
+
     if (!options) {
       options = {};
     }
+
     options.vent = this.vent;
 
     var menu = new Menu(items, options);
@@ -79,7 +78,8 @@
       menu.show(event);
     });
 
-    menu.init();
+    this.menus.push(menu);
+
     return menu;
   };
 

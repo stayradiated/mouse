@@ -52,8 +52,8 @@
       fadeOut: 300
     });
 
-    mouse.on('menu-item', function (id) {
-      console.log('selecting ' + id);
+    mouse.on('menu-item', function (id, items) {
+      console.log('selected', id, items);
     });
 
     mouse.init();

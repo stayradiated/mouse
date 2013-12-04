@@ -25,7 +25,9 @@
     this.render = this.render.bind(this);
     this.init = this.init.bind(this);
 
+    // Options
     this.duration = options.fadeOut || 0;
+
     this.vent = options.vent;
     this.id = createId();
     this.contents = [];
@@ -47,33 +49,32 @@
 
     }
 
-    this.render();
   };
 
-  Menu.prototype.init = function (parent) {
+  Menu.prototype.init = function (items) {
     var self = this;
-    parent = parent || document;
-    console.log();
 
-    parent.addEventListener('contextmenu', function (e) {
-      e.preventDefault();
+    this.render();
+
+    this.items = items;
+
+    this.el.addEventListener('mousedown', function (event) {
+      event.stopPropagation();
+      self.select(event);
+    });
+
+    document.addEventListener('contextmenu', function (event) {
+      event.preventDefault();
     });
 
     document.addEventListener('mousedown', function (event) {
-      var target;
       if (!(self.active && event.which === 1)) {
         return;
       }
-      target = event.target;
-      while (target !== null && target !== parent) {
-        if (target === self.el) {
-          self.select(event);
-          return;
-        }
-        target = target.parentElement;
-      }
-      return self.hide();
+      self.hide();
     });
+
+
 
   };
 
@@ -109,11 +110,13 @@
   Menu.prototype.select = function (event) {
     var id, target;
 
+    event.stopPropagation();
+
     target = event.target;
     id = target.dataset.id;
 
     if (id !== null) {
-      this.vent.emit('menu-item', id);
+      this.vent.emit('menu-item', id, this.items.selected);
     }
 
     return this.hide();
