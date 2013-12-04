@@ -2,7 +2,7 @@
 
   'use strict';
 
-  var Api, Signals, Items, Mouse, Select, Drag, Drop;
+  var Api, Signals, Items, Mouse, Select, Drag, Drop, Menu;
 
   Signals = require('signals');
   Items = require('./items');
@@ -10,6 +10,7 @@
   Select = require('./select');
   Drag = require('./drag');
   Drop = require('./drop');
+  Menu = require('./menu');
 
   Api = function (options) {
     this.vent = new Signals();
@@ -64,6 +65,22 @@
   Api.prototype.removeDrop = function (drop) {
     var index = this.drops.indexOf(drop);
     this.drops.splice(index, 1);
+  };
+
+  Api.prototype.addMenu = function (items, options) {
+    if (!options) {
+      options = {};
+    }
+    options.vent = this.vent;
+
+    var menu = new Menu(items, options);
+
+    this.on('right-click', function (event) {
+      menu.show(event);
+    });
+
+    menu.init();
+    return menu;
   };
 
   Api.prototype.on = function () {

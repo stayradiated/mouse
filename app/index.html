@@ -21,6 +21,7 @@
   <div class="drop-zone"></div>
   <script src="mouse.js"></script>
   <script>
+
     var mouse = new Mouse({
         parent: document.body,
         query: '.selectables div',
@@ -33,17 +34,30 @@
         offsetY: -15,
         offsetX: -5
     });
+
     mouse.addDrop(document.querySelector('.drop-zone'));
+
     mouse.on('drop', function (elements, zone) {
       var selectables = document.querySelector('.selectables');
       for (var i = 0; i < elements.length; i++) {
         selectables.removeChild(elements[i]);
       }
     });
-    mouse.on('right-click', function (event, elements) {
-      console.log(event, elements);
+
+    mouse.addMenu([{
+      'delete': 'Delete Items'
+    }, {
+      'other': 'Hello'
+    }], {
+      fadeOut: 300
     });
+
+    mouse.on('menu-item', function (id) {
+      console.log('selecting ' + id);
+    });
+
     mouse.init();
+
   </script>
  </body>
  </html>

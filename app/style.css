@@ -32,7 +32,7 @@ body {
   overflow: auto;
 }
 
-.item {
+.selectables .item {
   display: inline-block;
   text-align: center;
   vertical-align: top;
@@ -44,13 +44,13 @@ body {
   border: 5px solid #eee;
 }
 
-.item.selected {
+.selectables .item.selected {
   color: #fff;
   border-color: #08c;
   background: #004568;
 }
 
-.item.hidden {
+.selectables .item.hidden {
   opacity: 0.3;
 }
 
@@ -79,3 +79,62 @@ body {
 .drop-zone.droppable {
   background: rgba(100,100,100,0.4);
 }
+
+
+
+/***
+ * REQUIRED
+ */
+
+.right-click-menu {
+  position: absolute;
+  cursor: default;
+
+  background: #fff;
+
+  opacity: 1;
+  transition: opacity 300ms ease;
+}
+
+.right-click-menu.hidden {
+  // display: none;
+  opacity: 0;
+}
+
+
+/***
+ * OPTIONAL STYLES
+ */
+
+body {
+  font: 13px/21px "Lucida Grande", sans-serif;
+}
+
+.right-click-menu {
+  border-radius: 3px;
+  min-width: 150px;
+  padding: 5px 0;
+  border: 1px solid #ccc;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+}
+
+.right-click-menu .item {
+  padding: 0 10px;
+}
+
+.right-click-menu .item:hover {
+  color: #fff;
+  background: #557bf3;
+}
+
+.right-click-menu hr {
+  height: 1px;
+  margin: 5px 0;
+  border: 0;
+  background: #ccc;
+}
+
+.right-click-menu.hidden {
+  display: none;
+}
+
