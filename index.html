@@ -7,60 +7,57 @@
  </head>
  <body>
   <div class="selectables">
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
+    <div class="item">One</div>
+    <div class="item">Two</div>
+    <div class="item">Three</div>
+    <div class="item">Four</div>
+    <div class="item">Five</div>
+    <div class="item">Six</div>
+    <div class="item">Seven</div>
+    <div class="item">Eight</div>
+    <div class="item">Nine</div>
+    <div class="item">Ten</div>
   </div>
-  <script src="select.js"></script>
+  <div class="drop-zone"></div>
+  <script src="mouse.js"></script>
   <script>
-    var select = new Select({
+
+    var mouse = new Mouse({
         parent: document.body,
-        query: '.selectables div'
+        query: '.selectables div',
+        helper: function (elements) {
+          if (elements.length === 1) {
+            return elements[0].innerText;
+          }
+          return 'Moving ' + elements.length + ' items';
+        },
+        offsetY: -15,
+        offsetX: -5
     });
-    select.init();
+
+    mouse.addDrop(document.querySelector('.drop-zone'));
+
+    mouse.on('drop', function (elements, zone) {
+      var selectables = document.querySelector('.selectables');
+      for (var i = 0; i < elements.length; i++) {
+        selectables.removeChild(elements[i]);
+      }
+    });
+
+    mouse.addMenu([{
+      'delete': 'Delete Items'
+    }, {
+      'other': 'Hello'
+    }], {
+      fadeOut: 300
+    });
+
+    mouse.on('menu-item', function (id) {
+      console.log('selecting ' + id);
+    });
+
+    mouse.init();
+
   </script>
  </body>
  </html>

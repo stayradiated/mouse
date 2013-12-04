@@ -1,4 +1,5 @@
 body {
+  font: 20px/50px monospace;
   background: url('bg.png');
   cursor: default;
   -webkit-user-select: none;
@@ -23,20 +24,116 @@ body {
 }
 
 .selectables {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 150px;
+  overflow: auto;
 }
 
-.selectables div {
+.selectables .item {
   display: inline-block;
-  background: white;
-  opacity: 0.7;
+  text-align: center;
+  vertical-align: top;
+  background: #ccc;
   margin: 20px;
   width: 50px;
   height: 50px;
   padding: 20px;
-  border: 5px solid #ccc;
+  border: 5px solid #eee;
 }
 
-.selectables .selected {
-  background: rgba(30, 30, 200, 0.3);
+.selectables .item.selected {
+  color: #fff;
+  border-color: #08c;
+  background: #004568;
+}
+
+.selectables .item.hidden {
+  opacity: 0.3;
+}
+
+.drag-helper {
+  background: #08c;
+  border: 5px solid #08c;
+  background: #004568;
+  position: absolute;
+  height: 30px;
+  min-width: 200px;
+  line-height: 30px;
+  color: #fff;
+  text-align: center;
+}
+
+.drop-zone {
+  background: rgba(0,0,0,0.4);
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  height: 150px;
+  transition: background 0.15s ease;
+}
+
+.drop-zone.droppable {
+  background: rgba(100,100,100,0.4);
+}
+
+
+
+/***
+ * REQUIRED
+ */
+
+.right-click-menu {
+  position: absolute;
+  cursor: default;
+
+  background: #fff;
+
+  opacity: 1;
+  transition: opacity 300ms ease;
+}
+
+.right-click-menu.hidden {
+  // display: none;
+  opacity: 0;
+}
+
+
+/***
+ * OPTIONAL STYLES
+ */
+
+body {
+  font: 13px/21px "Lucida Grande", sans-serif;
+}
+
+.right-click-menu {
+  border-radius: 4px;
+  min-width: 150px;
+  padding: 4px 0;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+}
+
+.right-click-menu .item {
+  padding: 0 10px;
+}
+
+.right-click-menu .item:hover {
+  color: #fff;
+  background: #557bf3;
+}
+
+.right-click-menu hr {
+  height: 1px;
+  margin: 4px 0;
+  border: 0;
+  background: #ccc;
+}
+
+.right-click-menu.hidden {
+  display: none;
 }
 
