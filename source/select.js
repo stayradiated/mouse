@@ -10,6 +10,7 @@
 
     // Set instance variables
     this.vent = options.vent;
+    this.parent = options.parent;
     this.items = options.items;
     this.box = null;
 
@@ -17,12 +18,14 @@
     this.start = this.start.bind(this);
     this.move = this.move.bind(this);
     this.end = this.end.bind(this);
+    this.scroll = this.scroll.bind(this);
 
     // Bind events
     this.vent.on('prepare-select', this.prepare);
     this.vent.on('start-select', this.start);
     this.vent.on('move-select', this.move);
     this.vent.on('end-select', this.end);
+    this.vent.on('scroll', this.scroll);
 
   };
 
@@ -52,7 +55,16 @@
   };
 
   Select.prototype.move = function (event) {
-    this.box.setEnd(event);
+    this.mouseX = event.pageX;
+    this.mouseY = event.pageY;
+    this.box.setEnd(this.mouseX, this.mouseY);
+    this.items.check(this.box.rect);
+    this.box.render();
+  };
+
+  Select.prototype.scroll = function () {
+    this.box.setOffset(this.parent);
+    this.box.setEnd(this.mouseX, this.mouseY);
     this.items.check(this.box.rect);
     this.box.render();
   };

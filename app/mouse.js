@@ -81,6 +81,7 @@
           });
       
           this.select = new Select({
+            parent: this.parent,
             vent: this.vent,
             items: this.items
           });
@@ -519,7 +520,8 @@
       
         module.exports = Rectangle;
       
-      }());;
+      }());
+      ;
       }
     ], [
       {
@@ -555,6 +557,7 @@
           this._up = this._up.bind(this);
           this._down = this._down.bind(this);
           this._move = this._move.bind(this);
+          this._scroll = this._scroll.bind(this);
         };
       
       
@@ -564,6 +567,11 @@
       
         Mouse.prototype.holdingAppend = function (event) {
           return event.ctrlKey || event.metaKey;
+        };
+      
+        Mouse.prototype._scroll = function (event) {
+          if (! this.down) { return; }
+          this.vent.emit('scroll', event);
         };
       
         /**
@@ -688,7 +696,9 @@
          */
       
         Mouse.prototype.init = function () {
+          console.log(this.parent, 'scroll');
           this.parent.addEventListener('mousedown', this._down);
+          this.parent.addEventListener('scroll', this._scroll);
           document.addEventListener('mousemove', this._move);
           document.addEventListener('mouseup', this._up);
         };
@@ -718,6 +728,7 @@
       
           // Set instance variables
           this.vent = options.vent;
+          this.parent = options.parent;
           this.items = options.items;
           this.box = null;
       
@@ -725,12 +736,14 @@
           this.start = this.start.bind(this);
           this.move = this.move.bind(this);
           this.end = this.end.bind(this);
+          this.scroll = this.scroll.bind(this);
       
           // Bind events
           this.vent.on('prepare-select', this.prepare);
           this.vent.on('start-select', this.start);
           this.vent.on('move-select', this.move);
           this.vent.on('end-select', this.end);
+          this.vent.on('scroll', this.scroll);
       
         };
       
@@ -760,7 +773,16 @@
         };
       
         Select.prototype.move = function (event) {
-          this.box.setEnd(event);
+          this.mouseX = event.pageX;
+          this.mouseY = event.pageY;
+          this.box.setEnd(this.mouseX, this.mouseY);
+          this.items.check(this.box.rect);
+          this.box.render();
+        };
+      
+        Select.prototype.scroll = function () {
+          this.box.setOffset(this.parent);
+          this.box.setEnd(this.mouseX, this.mouseY);
           this.items.check(this.box.rect);
           this.box.render();
         };
@@ -799,6 +821,9 @@
           this.el.className = Box.className;
           document.body.appendChild(this.el);
       
+          this.offsetX = 0;
+          this.offsetY = 0;
+      
           // TODO: Do this via css?
           this.el.style.left   = '-10px';
           this.el.style.top    = '-10px';
@@ -816,8 +841,17 @@
           return this;
         };
       
-        Box.prototype.setEnd = function (event) {
-          this.rect.setEnd(event.pageX, event.pageY);
+        Box.prototype.setOffset = function (element, event) {
+          this.offsetY = element.scrollTop;
+          this.offsetX = element.scrollLeft;
+          this.setEnd(event);
+        };
+      
+        Box.prototype.setEnd = function (x, y) {
+          this.rect.setEnd(
+            x + this.offsetX,
+            y + this.offsetY
+          );
           return this;
         };
       
@@ -831,8 +865,8 @@
         };
       
         Box.prototype.render = function () {
-          this.el.style.top    = this.rect.top + 'px';
-          this.el.style.left   = this.rect.left + 'px';
+          this.el.style.top    = this.rect.top - this.offsetY + 'px';
+          this.el.style.left   = this.rect.left - this.offsetX + 'px';
           this.el.style.width  = this.rect.width + 'px';
           this.el.style.height = this.rect.height + 'px';
           return this;
@@ -840,7 +874,8 @@
       
         module.exports = Box;
       
-      }());;
+      }());
+      ;
       }
     ], [
       {

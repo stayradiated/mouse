@@ -37,6 +37,7 @@
     });
 
     this.select = new Select({
+      parent: this.parent,
       vent: this.vent,
       items: this.items
     });

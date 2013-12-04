@@ -13,6 +13,9 @@
     this.el.className = Box.className;
     document.body.appendChild(this.el);
 
+    this.offsetX = 0;
+    this.offsetY = 0;
+
     // TODO: Do this via css?
     this.el.style.left   = '-10px';
     this.el.style.top    = '-10px';
@@ -30,8 +33,17 @@
     return this;
   };
 
-  Box.prototype.setEnd = function (event) {
-    this.rect.setEnd(event.pageX, event.pageY);
+  Box.prototype.setOffset = function (element, event) {
+    this.offsetY = element.scrollTop;
+    this.offsetX = element.scrollLeft;
+    this.setEnd(event);
+  };
+
+  Box.prototype.setEnd = function (x, y) {
+    this.rect.setEnd(
+      x + this.offsetX,
+      y + this.offsetY
+    );
     return this;
   };
 
@@ -45,8 +57,8 @@
   };
 
   Box.prototype.render = function () {
-    this.el.style.top    = this.rect.top + 'px';
-    this.el.style.left   = this.rect.left + 'px';
+    this.el.style.top    = this.rect.top - this.offsetY + 'px';
+    this.el.style.left   = this.rect.left - this.offsetX + 'px';
     this.el.style.width  = this.rect.width + 'px';
     this.el.style.height = this.rect.height + 'px';
     return this;

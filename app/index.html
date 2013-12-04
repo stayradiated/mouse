@@ -23,8 +23,8 @@
   <script>
 
     var mouse = new Mouse({
-        parent: document.body,
-        query: '.selectables div',
+        parent: '.selectables',
+        query: 'div',
         helper: function (elements) {
           if (elements.length === 1) {
             return elements[0].innerText;

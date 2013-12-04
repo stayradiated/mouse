@@ -56,6 +56,7 @@ body {
 }
 
 .drag-helper {
+  pointer-events: none;
   background: #08c;
   border: 5px solid #08c;
   background: #004568;
