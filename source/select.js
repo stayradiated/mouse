@@ -44,7 +44,7 @@
     if (this.box) { this.box.remove(); }
 
     this.box = new Box();
-    this.box.setStart(event);
+    this.box.setStart(event, this.parent);
 
     if (! append) {
       this.items.deselectAll();
@@ -55,16 +55,18 @@
   };
 
   Select.prototype.move = function (event) {
-    this.mouseX = event.pageX;
-    this.mouseY = event.pageY;
-    this.box.setEnd(this.mouseX, this.mouseY);
-    this.items.check(this.box.rect);
-    this.box.render();
+    this.box.setEnd(event);
+    this.lastEvent = event;
+    this.update();
   };
 
   Select.prototype.scroll = function () {
     this.box.setOffset(this.parent);
-    this.box.setEnd(this.mouseX, this.mouseY);
+    this.box.setEnd(this.lastEvent);
+    this.update();
+  };
+
+  Select.prototype.update = function () {
     this.items.check(this.box.rect);
     this.box.render();
   };

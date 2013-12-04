@@ -16,6 +16,8 @@
     this.startY = 0;
     this.endX = 0;
     this.endY = 0;
+    this.offsetX = 0;
+    this.offsetY = 0;
 
     if (rect) {
       this.setRect(rect);
@@ -52,26 +54,52 @@
     return this;
   };
 
+
+  Rectangle.prototype.setOffset = function (x, y) {
+
+    this.offsetX = x;
+    this.offsetY = y;
+    this.updateFromPoints();
+
+    return this;
+  };
+
   Rectangle.prototype.updateFromPoints = function () {
 
-    if (this.endX > this.startX) {
+    var endXOffset, endYOffset;
+
+    endXOffset = this.endX + this.offsetX;
+    endYOffset = this.endY + this.offsetY;
+
+    // Moving right
+    if (endXOffset > this.startX) {
       this.left = this.startX;
-      this.right = this.endX;
+      this.right = endXOffset;
+
+    // Moving left
     } else {
-      this.left = this.endX;
+      this.left = endXOffset;
       this.right = this.startX;
     }
 
-    if (this.endY > this.startY) {
+    // Moving down
+    if (endYOffset > this.startY) {
       this.top = this.startY;
-      this.bottom = this.endY;
+      this.bottom = endYOffset;
+
+    // Moving up
     } else {
-      this.top = this.endY;
+      this.top = endYOffset;
       this.bottom = this.startY;
     }
 
-    this.height = this.bottom - this.top;
+    // Calculate size of box
     this.width = this.right - this.left;
+    this.height = this.bottom - this.top;
+
+    // Calculate fake position of box
+    this.offsetTop = this.top - this.offsetY;
+    this.offsetLeft = this.left - this.offsetX;
 
     return this;
   };

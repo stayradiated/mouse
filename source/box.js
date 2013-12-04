@@ -28,22 +28,25 @@
 
   Box.className = 'select_js_box';
 
-  Box.prototype.setStart = function (event) {
+  Box.prototype.setStart = function (event, element) {
     this.rect.setStart(event.pageX, event.pageY);
+
+    this.startOffsetX = element.scrollLeft;
+    this.startOffsetY = element.scrollTop;
+
     return this;
   };
 
-  Box.prototype.setOffset = function (element, event) {
-    this.offsetY = element.scrollTop;
-    this.offsetX = element.scrollLeft;
-    this.setEnd(event);
+  Box.prototype.setOffset = function (element) {
+    this.rect.setOffset(
+      element.scrollLeft - this.startOffsetX,
+      element.scrollTop - this.startOffsetY
+    );
+    return this;
   };
 
-  Box.prototype.setEnd = function (x, y) {
-    this.rect.setEnd(
-      x + this.offsetX,
-      y + this.offsetY
-    );
+  Box.prototype.setEnd = function (event) {
+    this.rect.setEnd(event.pageX, event.pageY);
     return this;
   };
 
@@ -57,8 +60,8 @@
   };
 
   Box.prototype.render = function () {
-    this.el.style.top    = this.rect.top - this.offsetY + 'px';
-    this.el.style.left   = this.rect.left - this.offsetX + 'px';
+    this.el.style.top    = this.rect.offsetTop + 'px';
+    this.el.style.left   = this.rect.offsetLeft + 'px';
     this.el.style.width  = this.rect.width + 'px';
     this.el.style.height = this.rect.height + 'px';
     return this;
