@@ -111,11 +111,10 @@ body {
 }
 
 .right-click-menu {
-  border-radius: 3px;
+  border-radius: 4px;
   min-width: 150px;
-  padding: 5px 0;
-  border: 1px solid #ccc;
-  box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+  padding: 4px 0;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
 }
 
 .right-click-menu .item {
@@ -129,7 +128,7 @@ body {
 
 .right-click-menu hr {
   height: 1px;
-  margin: 5px 0;
+  margin: 4px 0;
   border: 0;
   background: #ccc;
 }
