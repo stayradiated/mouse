@@ -52,8 +52,12 @@
       fadeOut: 300
     });
 
-    mouse.on('menu-item', function (id, items) {
-      console.log('selected', id, items);
+    mouse.on('menu:delete', function (items) {
+      console.log('deleting', items);
+    });
+
+    mouse.on('menu:other', function (items) {
+      console.log('othering', items);
     });
 
     mouse.init();

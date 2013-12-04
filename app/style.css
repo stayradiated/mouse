@@ -97,7 +97,7 @@ body {
 }
 
 .right-click-menu.hidden {
-  // display: none;
+  /* display: none; */
   opacity: 0;
 }
 

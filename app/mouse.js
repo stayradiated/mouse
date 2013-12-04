@@ -1162,7 +1162,7 @@
           id = target.dataset.id;
       
           if (id !== null) {
-            this.vent.emit('menu-item', id, this.items.selected);
+            this.vent.emit('menu:' + id, this.items.selected);
           }
       
           return this.hide();
