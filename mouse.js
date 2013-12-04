@@ -81,6 +81,7 @@
           });
       
           this.select = new Select({
+            parent: this.parent,
             vent: this.vent,
             items: this.items
           });
@@ -424,6 +425,8 @@
           this.startY = 0;
           this.endX = 0;
           this.endY = 0;
+          this.offsetX = 0;
+          this.offsetY = 0;
       
           if (rect) {
             this.setRect(rect);
@@ -460,26 +463,52 @@
           return this;
         };
       
+      
+        Rectangle.prototype.setOffset = function (x, y) {
+      
+          this.offsetX = x;
+          this.offsetY = y;
+          this.updateFromPoints();
+      
+          return this;
+        };
+      
         Rectangle.prototype.updateFromPoints = function () {
       
-          if (this.endX > this.startX) {
+          var endXOffset, endYOffset;
+      
+          endXOffset = this.endX + this.offsetX;
+          endYOffset = this.endY + this.offsetY;
+      
+          // Moving right
+          if (endXOffset > this.startX) {
             this.left = this.startX;
-            this.right = this.endX;
+            this.right = endXOffset;
+      
+          // Moving left
           } else {
-            this.left = this.endX;
+            this.left = endXOffset;
             this.right = this.startX;
           }
       
-          if (this.endY > this.startY) {
+          // Moving down
+          if (endYOffset > this.startY) {
             this.top = this.startY;
-            this.bottom = this.endY;
+            this.bottom = endYOffset;
+      
+          // Moving up
           } else {
-            this.top = this.endY;
+            this.top = endYOffset;
             this.bottom = this.startY;
           }
       
-          this.height = this.bottom - this.top;
+          // Calculate size of box
           this.width = this.right - this.left;
+          this.height = this.bottom - this.top;
+      
+          // Calculate fake position of box
+          this.offsetTop = this.top - this.offsetY;
+          this.offsetLeft = this.left - this.offsetX;
       
           return this;
         };
@@ -519,7 +548,8 @@
       
         module.exports = Rectangle;
       
-      }());;
+      }());
+      ;
       }
     ], [
       {
@@ -555,6 +585,7 @@
           this._up = this._up.bind(this);
           this._down = this._down.bind(this);
           this._move = this._move.bind(this);
+          this._scroll = this._scroll.bind(this);
         };
       
       
@@ -564,6 +595,11 @@
       
         Mouse.prototype.holdingAppend = function (event) {
           return event.ctrlKey || event.metaKey;
+        };
+      
+        Mouse.prototype._scroll = function (event) {
+          if (! this.down) { return; }
+          this.vent.emit('scroll', event);
         };
       
         /**
@@ -688,7 +724,9 @@
          */
       
         Mouse.prototype.init = function () {
+          console.log(this.parent, 'scroll');
           this.parent.addEventListener('mousedown', this._down);
+          this.parent.addEventListener('scroll', this._scroll);
           document.addEventListener('mousemove', this._move);
           document.addEventListener('mouseup', this._up);
         };
@@ -718,6 +756,7 @@
       
           // Set instance variables
           this.vent = options.vent;
+          this.parent = options.parent;
           this.items = options.items;
           this.box = null;
       
@@ -725,12 +764,14 @@
           this.start = this.start.bind(this);
           this.move = this.move.bind(this);
           this.end = this.end.bind(this);
+          this.scroll = this.scroll.bind(this);
       
           // Bind events
           this.vent.on('prepare-select', this.prepare);
           this.vent.on('start-select', this.start);
           this.vent.on('move-select', this.move);
           this.vent.on('end-select', this.end);
+          this.vent.on('scroll', this.scroll);
       
         };
       
@@ -749,7 +790,7 @@
           if (this.box) { this.box.remove(); }
       
           this.box = new Box();
-          this.box.setStart(event);
+          this.box.setStart(event, this.parent);
       
           if (! append) {
             this.items.deselectAll();
@@ -761,6 +802,17 @@
       
         Select.prototype.move = function (event) {
           this.box.setEnd(event);
+          this.lastEvent = event;
+          this.update();
+        };
+      
+        Select.prototype.scroll = function () {
+          this.box.setOffset(this.parent);
+          this.box.setEnd(this.lastEvent);
+          this.update();
+        };
+      
+        Select.prototype.update = function () {
           this.items.check(this.box.rect);
           this.box.render();
         };
@@ -799,6 +851,9 @@
           this.el.className = Box.className;
           document.body.appendChild(this.el);
       
+          this.offsetX = 0;
+          this.offsetY = 0;
+      
           // TODO: Do this via css?
           this.el.style.left   = '-10px';
           this.el.style.top    = '-10px';
@@ -811,8 +866,20 @@
       
         Box.className = 'select_js_box';
       
-        Box.prototype.setStart = function (event) {
+        Box.prototype.setStart = function (event, element) {
           this.rect.setStart(event.pageX, event.pageY);
+      
+          this.startOffsetX = element.scrollLeft;
+          this.startOffsetY = element.scrollTop;
+      
+          return this;
+        };
+      
+        Box.prototype.setOffset = function (element) {
+          this.rect.setOffset(
+            element.scrollLeft - this.startOffsetX,
+            element.scrollTop - this.startOffsetY
+          );
           return this;
         };
       
@@ -831,8 +898,8 @@
         };
       
         Box.prototype.render = function () {
-          this.el.style.top    = this.rect.top + 'px';
-          this.el.style.left   = this.rect.left + 'px';
+          this.el.style.top    = this.rect.offsetTop + 'px';
+          this.el.style.left   = this.rect.offsetLeft + 'px';
           this.el.style.width  = this.rect.width + 'px';
           this.el.style.height = this.rect.height + 'px';
           return this;
@@ -840,7 +907,8 @@
       
         module.exports = Box;
       
-      }());;
+      }());
+      ;
       }
     ], [
       {
@@ -1162,7 +1230,7 @@
           id = target.dataset.id;
       
           if (id !== null) {
-            this.vent.emit('menu-item', id, this.items.selected);
+            this.vent.emit('menu:' + id, this.items.selected);
           }
       
           return this.hide();

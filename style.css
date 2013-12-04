@@ -6,6 +6,7 @@ body {
 }
 
 .select_js_box {
+  pointer-events: none;
   background: rgba(255,255,255,0.15);
   position: absolute;
   top: 20px;
@@ -55,6 +56,7 @@ body {
 }
 
 .drag-helper {
+  pointer-events: none;
   background: #08c;
   border: 5px solid #08c;
   background: #004568;
@@ -97,8 +99,9 @@ body {
 }
 
 .right-click-menu.hidden {
-  // display: none;
+  /* display: none; */
   opacity: 0;
+  pointer-events: none;
 }
 
 
@@ -132,8 +135,3 @@ body {
   border: 0;
   background: #ccc;
 }
-
-.right-click-menu.hidden {
-  display: none;
-}
-
