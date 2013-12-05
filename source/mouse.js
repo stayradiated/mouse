@@ -164,7 +164,6 @@
    */
 
   Mouse.prototype.init = function () {
-    console.log(this.parent, 'scroll');
     this.parent.addEventListener('mousedown', this._down);
     this.parent.addEventListener('scroll', this._scroll);
     document.addEventListener('mousemove', this._move);
