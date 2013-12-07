@@ -137,6 +137,12 @@
     );
   };
 
+  Rectangle.prototype.distance = function (x, y) {
+    x = Math.pow((this.left + this.width / 2) - x, 2);
+    y = Math.pow((this.top + this.height / 2) - y, 2);
+    return Math.sqrt(x + y);
+  };
+
   module.exports = Rectangle;
 
 }());

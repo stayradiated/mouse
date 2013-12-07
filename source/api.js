@@ -2,7 +2,7 @@
 
   'use strict';
 
-  var Api, Signals, Items, Mouse, Select, Drag, Drop, Menu;
+  var Api, Signals, Items, Mouse, Select, Drag, Drop, Menu, Sort;
 
   Signals = require('signals');
   Items = require('./items');
@@ -11,6 +11,7 @@
   Drag = require('./drag');
   Drop = require('./drop');
   Menu = require('./menu');
+  Sort = require('./sort');
 
   Api = function (options) {
     this.vent = new Signals();
@@ -47,6 +48,11 @@
       helper: this.options.helper,
       offsetY: this.options.offsetY,
       offsetX: this.options.offsetX
+    });
+
+    this.sort = new Sort({
+      vent: this.vent,
+      items: this.items
     });
 
     for (var i = 0; i < this.menus.length; i++) {

@@ -135,3 +135,7 @@ body {
   border: 0;
   background: #ccc;
 }
+
+.selectables .item.closest {
+  background: red;
+}
