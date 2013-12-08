@@ -18,7 +18,6 @@
    */
 
   Items.prototype.fetch = function () {
-    console.log('fetching elements');
     this.elements = this.parent.querySelectorAll(this.query);
     return this.elements;
   };
@@ -86,7 +85,6 @@
    */
 
   Items.prototype.refreshPosition = function () {
-    console.log('getting positions');
     var i, el, len = this.elements.length;
     for (i = 0; i < len; i++) {
       el = this.elements[i];
@@ -138,14 +136,6 @@
       } else {
         el.selected = false;
       }
-    }
-  };
-
-
-  Items.prototype.each = function (fn) {
-    var i, len = this.elements.length;
-    for (i = 0; i < len; i++) {
-      fn(this.elements[i]);
     }
   };
 

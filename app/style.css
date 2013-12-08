@@ -31,18 +31,20 @@ body {
   right: 0;
   bottom: 150px;
   overflow: auto;
+  padding: 20px;
 }
 
 .selectables .item {
-  display: inline-block;
+  display: block;
   text-align: center;
   vertical-align: top;
   background: #ccc;
-  margin: 20px;
-  width: 50px;
-  height: 50px;
+  width: 100%;
+  line-height: 20px;
   padding: 20px;
   border: 5px solid #eee;
+  margin-top: 20px;
+  box-sizing: border-box;
 }
 
 .selectables .item.selected {
@@ -52,7 +54,12 @@ body {
 }
 
 .selectables .item.hidden {
-  opacity: 0.3;
+  /* opacity: 0.3; */
+  display: none;
+}
+
+.selectables .placeholder {
+  height: 70px;
 }
 
 .drag-helper {

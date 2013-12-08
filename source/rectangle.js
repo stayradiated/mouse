@@ -137,10 +137,23 @@
     );
   };
 
-  Rectangle.prototype.distance = function (x, y) {
-    x = Math.pow((this.left + this.width / 2) - x, 2);
-    y = Math.pow((this.top + this.height / 2) - y, 2);
-    return Math.sqrt(x + y);
+  // Only supports vertical distance at the moment
+  Rectangle.prototype.distance = function (y) {
+    var top, bottom;
+
+    top = Math.abs(this.top - y);
+    bottom = Math.abs(this.bottom - y);
+
+    // Closer to top
+    if (top < bottom) {
+      return [top, true];
+
+    // Closer to bottom
+    } else {
+      return [bottom, false];
+
+    }
+
   };
 
   module.exports = Rectangle;
