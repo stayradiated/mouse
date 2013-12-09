@@ -2,7 +2,9 @@
 
   'use strict';
 
-  var Api, Signals, Items, Mouse, Select, Drag, Drop, Menu, Sort;
+  var Api, Signals, Items, Mouse, Select, Drag, Drop, Menu, Sort, oldMouse;
+
+  oldMouse = window.Mouse;
 
   Signals = require('signals');
   Items = require('./items');
@@ -101,6 +103,14 @@
 
   Api.prototype.clearSelection = function () {
     this.items.deselectAll();
+  };
+
+  Api.prototype.isMoving = function () {
+    return this.mouse.moving;
+  };
+
+  Api.prototype.noConflict = function () {
+    window.Mouse = oldMouse;
   };
 
   if (typeof window !== 'undefined') {
