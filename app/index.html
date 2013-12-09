@@ -31,8 +31,8 @@
           }
           return 'Moving ' + elements.length + ' items';
         },
-        offsetY: -15,
-        offsetX: -5
+        offsetY: -30,
+        offsetX: 0
     });
 
     mouse.addDrop(document.querySelector('.drop-zone'));
@@ -58,6 +58,10 @@
 
     mouse.on('menu:other', function (items) {
       console.log('othering', items);
+    });
+
+    mouse.on('sort', function (items) {
+      console.log('sorted', items);
     });
 
     mouse.init();

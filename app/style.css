@@ -39,11 +39,11 @@ body {
   text-align: center;
   vertical-align: top;
   background: #ccc;
-  width: 100%;
+  width: 200px;
   line-height: 20px;
-  padding: 20px;
-  border: 5px solid #eee;
-  margin-top: 20px;
+  padding: 5px 20px;
+  border: 1px solid #eee;
+  margin-top: 4px;
   box-sizing: border-box;
 }
 
@@ -54,18 +54,18 @@ body {
 }
 
 .selectables .item.hidden {
-  /* opacity: 0.3; */
-  display: none;
+  opacity: 0.3;
+  /* display: none; */
 }
 
 .selectables .placeholder {
-  height: 70px;
+  height: 32px;
 }
 
 .drag-helper {
   pointer-events: none;
   background: #08c;
-  border: 5px solid #08c;
+  border: 1px solid #08c;
   background: #004568;
   position: absolute;
   height: 30px;
