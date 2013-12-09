@@ -52,7 +52,8 @@
 
     this.sort = new Sort({
       vent: this.vent,
-      items: this.items
+      items: this.items,
+      container: this.parent
     });
 
     for (var i = 0; i < this.menus.length; i++) {

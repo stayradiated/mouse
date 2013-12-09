@@ -9,6 +9,7 @@ Sort = function (options) {
 
   this.vent = options.vent;
   this.items = options.items;
+  this.container = options.container;
 
   this.parent = null;
   this.closestItem = null;
@@ -40,8 +41,8 @@ Sort.prototype.getIndex = function (item) {
 Sort.prototype.prepare = function (selected) {
   this.parent = this.items.elements[0].parentElement;
   this.selected = selected;
-  this.container = new Rectangle(this.parent.getBoundingClientRect());
-  this.container.move(window.pageXOffset, window.pageYOffset);
+  this.rect = new Rectangle(this.container.getBoundingClientRect());
+  this.rect.move(window.pageXOffset, window.pageYOffset);
 };
 
 Sort.prototype.start = function () {
@@ -65,7 +66,7 @@ Sort.prototype.move = function (event) {
   var i, len, el, item, closest, distance, above;
 
   // Don't do anything if the users cursor isn't inside the parent container
-  if (! this.container.contains(event.pageX, event.pageY)) {
+  if (! this.rect.contains(event.pageX, event.pageY)) {
     return;
   }
 
@@ -141,11 +142,8 @@ Sort.prototype.end = function () {
   // Remove the placeholder
   this.parent.removeChild(this.placeholder);
 
-  // Refetch the items (to update the order)
-  // this.items.fetch();
-
   // Alert the user
-  this.vent.emit('sort', this.selected);
+  this.vent.emit('sort', this.selected, position);
 };
 
 module.exports = Sort;
