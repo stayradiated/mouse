@@ -15,6 +15,9 @@ Sort = function (options) {
   this.selected = null;
   this.above = null;
 
+  this.sorting = false;
+  this.startPoint = null;
+
   this.placeholder = document.createElement('div');
   this.placeholder.className = 'placeholder';
 
@@ -30,6 +33,10 @@ Sort = function (options) {
 
 };
 
+Sort.prototype.getIndex = function (item) {
+  return Array.prototype.indexOf.call(this.parent.children, item);
+};
+
 Sort.prototype.prepare = function (selected) {
   this.parent = this.items.elements[0].parentElement;
   this.selected = selected;
@@ -38,7 +45,14 @@ Sort.prototype.prepare = function (selected) {
 };
 
 Sort.prototype.start = function () {
+  var length, endPoint;
   this.items.refreshPosition();
+
+  // Figure out some stuff about the selected items
+  length = this.selected.length;
+  endPoint = this.getIndex(this.selected[length - 1]) + 1;
+  this.startPoint = this.getIndex(this.selected[0]);
+  this.sequential = this.startPoint + length === endPoint;
 };
 
 Sort.prototype.move = function (event) {
@@ -47,7 +61,7 @@ Sort.prototype.move = function (event) {
   // Calculate distance from cursor to item
   // Find closest item
   // Insert placeholder before or after item
-  
+
   var i, len, el, item, closest, distance, above;
 
   // Don't do anything if the users cursor isn't inside the parent container
@@ -81,6 +95,8 @@ Sort.prototype.move = function (event) {
   // Only update the dom if the item or position from the mouse is changed
   if (this.closestItem !== item || this.above !== above) {
 
+    this.sorting = true;
+
     // Insert the placeholder above or below the item
     if (above) {
       this.parent.insertBefore(this.placeholder, item);
@@ -98,8 +114,24 @@ Sort.prototype.move = function (event) {
 
 
 Sort.prototype.end = function () {
-  var i, len;
+  var i, len, position;
+
+  if (! this.sorting) {
+    return;
+  }
+
+  this.sorting = false;
   len = this.selected.length;
+  position = this.getIndex(this.placeholder);
+
+  // If the items haven't actually moved, then don't move them
+  if (position > this.startPoint ?
+      position - len === this.startPoint :
+      this.sequential ? this.startPoint === position : false
+  ) {
+    this.parent.removeChild(this.placeholder);
+    return;
+  }
 
   // Move each of the selected items to where the placeholder was
   for (i = 0; i < len; i++) {
@@ -110,10 +142,10 @@ Sort.prototype.end = function () {
   this.parent.removeChild(this.placeholder);
 
   // Refetch the items (to update the order)
-  this.items.fetch();
+  // this.items.fetch();
 
   // Alert the user
-  this.vent.emit('sort', this.items.elements);
+  this.vent.emit('sort', this.selected);
 };
 
 module.exports = Sort;
