@@ -1,6 +1,6 @@
 {
   "name": "mouse",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "main": "source/api.js",
   "scripts": {
     "test": "jshint source/*"
