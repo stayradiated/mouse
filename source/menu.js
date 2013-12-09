@@ -60,7 +60,12 @@
 
     this.el.addEventListener('mousedown', function (event) {
       event.stopPropagation();
-      self.select(event);
+    });
+
+    this.el.addEventListener('mouseup', function (event) {
+      if (event.target.classList.contains('item')) {
+        self.select(event);
+      }
     });
 
     document.addEventListener('contextmenu', function (event) {
@@ -73,8 +78,6 @@
       }
       self.hide();
     });
-
-
 
   };
 
