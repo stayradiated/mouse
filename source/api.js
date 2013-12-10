@@ -62,7 +62,6 @@
       this.menus[i].init(this.items);
     }
 
-    this.vent.on('remove-drop', this.removeDrop);
     this.mouse.init();
   };
 
