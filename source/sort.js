@@ -1,9 +1,9 @@
 
 'use strict';
 
-var Sort, Rectangle;
+var Sort, Frame;
 
-Rectangle = require('./rectangle');
+Frame = require('./frame');
 
 Sort = function (options) {
 
@@ -16,21 +16,20 @@ Sort = function (options) {
   this.selected = null;
   this.above = null;
 
+  this.scrollLeft = 0;
+  this.scrollTop = 0;
+
   this.sorting = false;
   this.startPoint = null;
 
   this.placeholder = document.createElement('div');
   this.placeholder.className = 'placeholder';
 
-  this.prepare = this.prepare.bind(this);
-  this.move = this.move.bind(this);
-  this.start = this.start.bind(this);
-  this.end = this.end.bind(this);
-
-  this.vent.on('prepare-drag', this.prepare);
-  this.vent.on('start-drag', this.start);
-  this.vent.on('move-drag', this.move);
-  this.vent.on('end-drag', this.end);
+  this.vent.on('prepare-drag', this.prepare, this);
+  this.vent.on('start-drag', this.start, this);
+  this.vent.on('move-drag', this.move, this);
+  this.vent.on('end-drag', this.end, this);
+  this.vent.on('scroll-drag', this.scroll, this);
 
 };
 
@@ -41,13 +40,25 @@ Sort.prototype.getIndex = function (item) {
 Sort.prototype.prepare = function (selected) {
   this.parent = this.items.elements[0].parentElement;
   this.selected = selected;
-  this.rect = new Rectangle(this.container.getBoundingClientRect());
+  if (this.selected.length === this.items.elements.length) {
+    this.dontSort = true;
+    return;
+  }
+  this.rect = new Frame(this.container.getBoundingClientRect());
   this.rect.move(window.pageXOffset, window.pageYOffset);
 };
 
 Sort.prototype.start = function () {
   var length, endPoint;
+
+  if (this.dontSort) {
+    return;
+  }
+
   this.items.refreshPosition();
+
+  this.scrollLeft = this.container.scrollLeft;
+  this.scrollTop = this.container.scrollTop;
 
   // Figure out some stuff about the selected items
   length = this.selected.length;
@@ -56,17 +67,17 @@ Sort.prototype.start = function () {
   this.sequential = this.startPoint + length === endPoint;
 };
 
-Sort.prototype.move = function (event) {
+Sort.prototype.update = function () {
 
   // Loop through each item
   // Calculate distance from cursor to item
   // Find closest item
   // Insert placeholder before or after item
 
-  var i, len, el, item, closest, distance, above;
+  var i, len, index, el, item, closest, distance, above;
 
   // Don't do anything if the users cursor isn't inside the parent container
-  if (! this.rect.contains(event.pageX, event.pageY)) {
+  if (! this.rect.contains(this.mouseX, this.mouseY)) {
     return;
   }
 
@@ -82,16 +93,16 @@ Sort.prototype.move = function (event) {
       continue;
     }
 
-    distance = el.rect.distance(event.pageY);
+    distance = el.rect.distance(this.mouseY);
 
     if (distance[0] < closest) {
       closest = distance[0];
       item = el;
       above = distance[1];
+      index = i;
     }
 
   }
-
 
   // Only update the dom if the item or position from the mouse is changed
   if (this.closestItem !== item || this.above !== above) {
@@ -107,21 +118,66 @@ Sort.prototype.move = function (event) {
 
     this.closestItem = item;
     this.above = above;
+    this.index = index;
     this.items.refreshPosition();
+    this.scrollLeft = this.container.scrollLeft;
+    this.scrollTop = this.container.scrollTop;
   }
 
 
 };
 
 
+/**
+ * Update the placeholder when the user moves the mouse
+ * - event (Event) : the mousemove event
+ */
+
+Sort.prototype.move = function (event) {
+  if (this.dontSort) {
+    return;
+  }
+  this.mouseX = event.pageX;
+  this.mouseY = event.pageY;
+  this.update();
+};
+
+/**
+ * Update the placeholder when the user scrolls
+ */
+
+Sort.prototype.scroll = function () {
+  if (this.dontSort) {
+    return;
+  }
+  var i, rect, len = this.items.elements.length;
+  for (i = 0; i < len; i++) {
+    rect = this.items.elements[i].rect;
+    rect.setOffset(
+      this.container.scrollLeft - this.scrollLeft,
+      this.container.scrollTop - this.scrollTop
+    );
+  }
+  // this.items.refreshPosition();
+  this.update();
+};
+
+
 Sort.prototype.end = function () {
   var i, len, position;
+
+
+  if (this.dontSort) {
+    this.dontSort = false;
+    return;
+  }
 
   if (! this.sorting) {
     return;
   }
 
   this.sorting = false;
+  this.index = undefined;
   len = this.selected.length;
   position = this.getIndex(this.placeholder);
 

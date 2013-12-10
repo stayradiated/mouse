@@ -21,11 +21,6 @@
     this.down = false;
     this.moving = false;
     this.mode = DEFAULT;
-
-    this._up = this._up.bind(this);
-    this._down = this._down.bind(this);
-    this._move = this._move.bind(this);
-    this._scroll = this._scroll.bind(this);
   };
 
 
@@ -39,7 +34,11 @@
 
   Mouse.prototype._scroll = function (event) {
     if (! this.down) { return; }
-    this.vent.emit('scroll', event);
+    if (this.mode === DRAG) {
+      this.vent.emit('scroll-drag', event);
+    } else {
+      this.vent.emit('scroll-select', event);
+    }
   };
 
   /**
@@ -164,10 +163,10 @@
    */
 
   Mouse.prototype.init = function () {
-    this.parent.addEventListener('mousedown', this._down);
-    this.parent.addEventListener('scroll', this._scroll);
-    document.addEventListener('mousemove', this._move);
-    document.addEventListener('mouseup', this._up);
+    this.parent.addEventListener('mousedown', this._down.bind(this));
+    this.parent.addEventListener('scroll', this._scroll.bind(this));
+    document.addEventListener('mousemove', this._move.bind(this));
+    document.addEventListener('mouseup', this._up.bind(this));
   };
 
   module.exports = Mouse;

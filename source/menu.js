@@ -19,12 +19,6 @@
 
     var id, message, section, i, len;
 
-    this.hide = this.hide.bind(this);
-    this.show = this.show.bind(this);
-    this.select = this.select.bind(this);
-    this.render = this.render.bind(this);
-    this.init = this.init.bind(this);
-
     // Options
     this.duration = options.fadeOut || 0;
 

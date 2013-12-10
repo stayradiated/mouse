@@ -14,18 +14,12 @@
     this.items = options.items;
     this.box = null;
 
-    this.prepare = this.prepare.bind(this);
-    this.start = this.start.bind(this);
-    this.move = this.move.bind(this);
-    this.end = this.end.bind(this);
-    this.scroll = this.scroll.bind(this);
-
     // Bind events
-    this.vent.on('prepare-select', this.prepare);
-    this.vent.on('start-select', this.start);
-    this.vent.on('move-select', this.move);
-    this.vent.on('end-select', this.end);
-    this.vent.on('scroll', this.scroll);
+    this.vent.on('prepare-select', this.prepare, this);
+    this.vent.on('start-select', this.start, this);
+    this.vent.on('move-select', this.move, this);
+    this.vent.on('end-select', this.end, this);
+    this.vent.on('scroll-select', this.scroll, this);
 
   };
 

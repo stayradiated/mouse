@@ -32,6 +32,7 @@ body {
   bottom: 150px;
   overflow: auto;
   padding: 20px;
+  counter-reset: my-counter -1;
 }
 
 .selectables .item {
@@ -40,11 +41,17 @@ body {
   vertical-align: top;
   background: #ccc;
   width: 200px;
-  line-height: 20px;
+  line-height: 50px;
   padding: 5px 20px;
   border: 1px solid #eee;
   margin-top: 4px;
   box-sizing: border-box;
+}
+
+.selectables .item:before {
+  content: counter(my-counter);
+  counter-increment: my-counter;
+  float: left;
 }
 
 .selectables .item.selected {
@@ -59,7 +66,9 @@ body {
 }
 
 .selectables .placeholder {
+  margin-top: 4px;
   height: 32px;
+  width: 200px;
 }
 
 .drag-helper {
@@ -145,4 +154,13 @@ body {
 
 .selectables .item.closest {
   background: red;
+}
+
+
+
+
+.placeholder {
+  background: white;
+  text-align: center;
+  line-height: 32px;
 }

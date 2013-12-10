@@ -2,9 +2,9 @@
 
   'use strict';
 
-  var Box, Rectangle;
+  var Box, Points;
 
-  Rectangle = require('./rectangle');
+  Points = require('./points');
 
   Box = function () {
 
@@ -22,7 +22,7 @@
     this.el.style.width  = 0;
     this.el.style.height = 0;
 
-    this.rect = new Rectangle();
+    this.rect = new Points();
 
   };
 

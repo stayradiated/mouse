@@ -12,7 +12,7 @@ Select stuff on the screen with a box.
 ![Example](example.jpg)
 
 ## Usage
-    
+
     // package.json
     "dependencies": {
       "mouse": "git://github.com/stayradiated/mouse.git#master"
@@ -30,3 +30,8 @@ Select stuff on the screen with a box.
 
 - Add CSS vendor prefixes
 - Allow users to set the fadeout time
+
+## Bugs
+
+- Scrolling causes errors
+- Dragging all the items causes erorrs

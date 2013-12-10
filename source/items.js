@@ -1,9 +1,9 @@
 (function () {
   'use strict';
 
-  var Items, Rectangle;
+  var Items, Frame;
 
-  Rectangle = require('./rectangle');
+  Frame = require('./frame');
 
   Items = function (options) {
     this.parent = options.parent;
@@ -88,16 +88,15 @@
     var i, el, len = this.elements.length;
     for (i = 0; i < len; i++) {
       el = this.elements[i];
-      el.rect = new Rectangle(el.getBoundingClientRect());
+      el.rect = new Frame(el.getBoundingClientRect());
       el.rect.move(window.pageXOffset, window.pageYOffset);
     }
   };
 
-
   /**
    * Quickly check each of the items to see if they touch the box
    * Important: You must run finishCheck() afterwards.
-   * - box (Rectangle) : the box to check the items against
+   * - box (Frame) : the box to check the items against
    */
 
   Items.prototype.check = function (box) {

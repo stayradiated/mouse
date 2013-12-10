@@ -2,9 +2,9 @@
 
   'use strict';
 
-  var Drop, Rectangle;
+  var Drop, Frame;
 
-  Rectangle = require('./rectangle');
+  Frame = require('./frame');
 
   Drop = function (options) {
 
@@ -16,18 +16,13 @@
     // Instance variables
     this.hover = false;
     this.active = false;
-    this.rect = new Rectangle();
-
-    this.prepare = this.prepare.bind(this);
-    this.move = this.move.bind(this);
-    this.activate = this.activate.bind(this);
-    this.deactivate = this.deactivate.bind(this);
+    this.rect = new Frame();
 
     // Events
-    this.vent.on('prepare-drag', this.prepare);
-    this.vent.on('start-drag', this.activate);
-    this.vent.on('end-drag', this.deactivate);
-    this.vent.on('move-drag', this.move);
+    this.vent.on('prepare-drag', this.prepare, this);
+    this.vent.on('start-drag', this.activate, this);
+    this.vent.on('end-drag', this.deactivate, this);
+    this.vent.on('move-drag', this.move, this);
   };
 
   Drop.prototype.prepare = function (items) {
