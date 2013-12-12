@@ -111,8 +111,8 @@
         this.vent.emit('move-select', event);
       }
     } else if (
-      Math.abs(event.x - this.start.x) > this.min ||
-      Math.abs(event.y - this.start.y) > this.min
+      Math.abs(event.pageX - this.start.pageX) > this.min ||
+      Math.abs(event.pageY - this.start.pageY) > this.min
     ) {
       this.moving = true;
       if (this.mode === DRAG) {

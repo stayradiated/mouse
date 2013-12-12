@@ -39,27 +39,33 @@
       vent: this.vent
     });
 
-    this.select = new Select({
-      parent: this.parent,
-      vent: this.vent,
-      items: this.items
-    });
+    if (this.options.select) {
+      this.select = new Select({
+        parent: this.parent,
+        vent: this.vent,
+        items: this.items
+      });
+    }
 
-    this.drag = new Drag({
-      vent: this.vent,
-      helper: this.options.helper,
-      offsetY: this.options.offsetY,
-      offsetX: this.options.offsetX
-    });
+    if (this.options.drag) {
+      this.drag = new Drag({
+        vent: this.vent,
+        helper: this.options.drag.helper,
+        offsetY: this.options.drag.offsetY,
+        offsetX: this.options.drag.offsetX
+      });
+    }
 
-    this.sort = new Sort({
-      vent: this.vent,
-      items: this.items,
-      container: this.parent
-    });
+    if (this.options.sort) {
+      this.sort = new Sort({
+        vent: this.vent,
+        items: this.items,
+        container: this.parent
+      });
+    }
 
-    for (var i = 0; i < this.menus.length; i++) {
-      this.menus[i].init(this.items);
+    if (this.menu) {
+      this.menu.init(this.items);
     }
 
     this.mouse.init();
@@ -74,21 +80,12 @@
   };
 
   Api.prototype.addMenu = function (items, options) {
-
-    if (!options) {
-      options = {};
-    }
-
+    if (!options) { options = {}; }
     options.vent = this.vent;
-
-    var menu = new Menu(items, options);
-
+    var menu = this.menu = new Menu(items, options);
     this.on('right-click', function (event) {
       menu.show(event);
     });
-
-    this.menus.push(menu);
-
     return menu;
   };
 

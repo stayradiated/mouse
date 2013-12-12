@@ -25,24 +25,22 @@
     var mouse = new Mouse({
         parent: '.selectables',
         query: 'div',
-        helper: function (elements) {
-          if (elements.length === 1) {
-            return elements[0].innerText;
-          }
-          return 'Moving ' + elements.length + ' items';
-        },
-        offsetY: -30,
-        offsetX: 0
+
+        select: true,
+        sort: true,
+        drag: {
+          helper: function (elements) {
+            if (elements.length === 1) {
+              return elements[0].innerText;
+            }
+            return 'Moving ' + elements.length + ' items';
+          },
+          offsetY: -30,
+          offsetX: 0
+        }
     });
 
     mouse.addDrop(document.querySelector('.drop-zone'));
-
-    mouse.on('drop', function (elements, zone) {
-      var selectables = document.querySelector('.selectables');
-      for (var i = 0; i < elements.length; i++) {
-        selectables.removeChild(elements[i]);
-      }
-    });
 
     mouse.addMenu([{
       'delete': 'Delete Items'
@@ -62,6 +60,13 @@
 
     mouse.on('sort', function (items) {
       console.log('sorted', items);
+    });
+
+    mouse.on('drop', function (elements, zone) {
+      var selectables = document.querySelector('.selectables');
+      for (var i = 0; i < elements.length; i++) {
+        selectables.removeChild(elements[i]);
+      }
     });
 
     mouse.init();
