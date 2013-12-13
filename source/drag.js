@@ -2,10 +2,10 @@
 
 var Drag;
 
-Drag = function (options) {
+Drag = function (options, vent) {
 
   // Load options
-  this.vent = options.vent;
+  this.vent = vent;
   this.createHelper = options.helper;
 
   // Set instance variables
@@ -15,7 +15,7 @@ Drag = function (options) {
 
   // Create placeholder
   this.helper = document.createElement('div');
-  this.helper.className = 'drag-helper';
+  this.helper.className = 'drag-helper ' + (options.className || '');
 
   // Bind events
   this.vent.on('prepare-drag', this.setItems, this);

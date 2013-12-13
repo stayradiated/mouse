@@ -48,12 +48,7 @@
     }
 
     if (this.options.drag) {
-      this.drag = new Drag({
-        vent: this.vent,
-        helper: this.options.drag.helper,
-        offsetY: this.options.drag.offsetY,
-        offsetX: this.options.drag.offsetX
-      });
+      this.drag = new Drag(this.options.drag, this.vent);
     }
 
     if (this.options.sort) {
