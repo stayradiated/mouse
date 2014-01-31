@@ -92,6 +92,10 @@
     this.vent.once.apply(this.vent, arguments);
   };
 
+  Api.prototype.selected = function () {
+    return this.items.selected;
+  };
+
   Api.prototype.clearSelection = function () {
     this.items.deselectAll();
   };
