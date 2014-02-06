@@ -92,6 +92,10 @@
     this.vent.once.apply(this.vent, arguments);
   };
 
+  Api.prototype.trigger = function () {
+    this.vent.emit.apply(this.vent, arguments);
+  };
+
   Api.prototype.selected = function () {
     return this.items.selected;
   };
